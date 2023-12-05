@@ -5,10 +5,15 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.arm.ArmPneumatics;
 import frc.robot.commands.drive.ModuleToDegree;
 import frc.robot.commands.drive.SwerveDriveCommand;
 import frc.robot.commands.drive.SwerveDrivePercent;
+import frc.robot.commands.intake.RunIntake;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ArmSubsystem.Arm;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -23,7 +28,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final DrivetrainSubsystem m_drive = new DrivetrainSubsystem();
+  public static final DrivetrainSubsystem m_drive = new DrivetrainSubsystem();
+  public static final ArmSubsystem m_arm = new ArmSubsystem();
+  public static final IntakeSubsystem m_intake = new IntakeSubsystem();
 
   // Drive Command
   // In terms of the robot, the cartesian plane is rotated 90 degrees, i.e X is forward (Y input for controller), Y is horizontal (X input for controller)
@@ -34,6 +41,14 @@ public class RobotContainer {
   private final InstantCommand resetGyro = new InstantCommand(()-> m_drive.resetHeading());
   private final InstantCommand resetEncoders = new InstantCommand(()->m_drive.resetEncoders());
   private final ModuleToDegree moveToDegree = new ModuleToDegree(m_drive);
+
+  // Arm Commands
+  private final ArmPneumatics m_disengageArm = new ArmPneumatics(m_arm, Arm.engage);
+  private final ArmPneumatics m_engageArm = new ArmPneumatics(m_arm, Arm.disengage);
+
+  // Intake Commands
+  private final RunIntake m_forwardIntake = new RunIntake(m_intake, ()->Vars.INTAKE_FORWARD);
+  private final RunIntake m_backwardIntake = new RunIntake(m_intake, ()-> Vars.INTAKE_BACKWARD);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -58,6 +73,11 @@ public class RobotContainer {
     IO.xbox1_Y.onTrue(resetEncoders);
     IO.xbox1_RB.whileTrue(toggleTurboOn);
     IO.xbox1_RB.whileFalse(toggleTurboOff);
+
+    IO.xbox2_RB.onTrue(m_engageArm);
+    IO.xbox2_LB.onTrue(m_disengageArm);
+    IO.xbox2_A.whileTrue(m_forwardIntake);
+    IO.xbox2_B.whileTrue(m_backwardIntake);
   }
 
   /**
