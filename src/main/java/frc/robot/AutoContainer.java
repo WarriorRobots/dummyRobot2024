@@ -14,12 +14,13 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.DashboardContainer.TabsIndex;
 
 /**
  * Singleton to handle auto selection
  */
 public class AutoContainer {
-  //private ShuffleboardTab autoTab = DashboardContainer.getInstance().getTab(TabsIndex.kAuto);
+  private ShuffleboardTab autoTab = DashboardContainer.getInstance().getTab(TabsIndex.kAuto);
   private SendableChooser<Command> chooser = new SendableChooser<Command>();
   private static AutoContainer instance = null;
 
@@ -27,7 +28,9 @@ public class AutoContainer {
   private AutoContainer() {}
 
   private void init() {
-    //autoTab.add("Auto Selector", chooser).withWidget(BuiltInWidgets.kComboBoxChooser).withPosition(3, 0).withSize(2,1);
+    chooser.addOption("None", new InstantCommand());
+
+    autoTab.add("Auto Selector", chooser).withWidget(BuiltInWidgets.kComboBoxChooser).withPosition(3, 0).withSize(2,1);
   }
 
   /**

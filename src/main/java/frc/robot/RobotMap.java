@@ -7,7 +7,7 @@ package frc.robot;
 /**  All CAN IDs reside here. */
 public class RobotMap {
   // Front Left Module IDs
-  public static int ID_FRONTLEFT_TURN = 1;
+  public static int ID_FRONTLEFT_TURN = 8;
   public static int ID_FRONTLEFT_DRIVE = 0;
   public static int ID_FRONTLEFT_CANCODER = 0;
   // Front Right Module IDs

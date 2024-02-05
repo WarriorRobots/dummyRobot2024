@@ -37,10 +37,22 @@ public class DrivetrainSubsystem extends SubsystemBase {
   /** Creates a new DrivetrainSubsystem. */
   public DrivetrainSubsystem() {
     // All Swerve Modules (DriveID, TURNID, DRIVEMOTORPHASE,TURNMOTORPHASE,DRIVEENCODERPHASE, TURN ENCODERPHASE) 
-    frontLeft = new SwerveModule(RobotMap.ID_FRONTLEFT_DRIVE,   RobotMap.ID_FRONTLEFT_TURN,    Vars.FRONTLEFT_DRIVE_MOTOR_REVERSED,   Vars.FRONTLEFT_TURN_MOTOR_REVERSED,   Vars.FRONTLEFT_DRIVE_ENCODER_REVERSED,   Vars.FRONTLEFT_TURN_ENCODER_REVERSED,  RobotMap.ID_FRONTLEFT_CANCODER,  Vars.FRONTLEFT_CANCODER_REVERSED,   Vars.absoluteEncoderOffsets[0]);
-    frontRight = new SwerveModule(RobotMap.ID_FRONTRIGHT_DRIVE, RobotMap.ID_FRONTRIGHT_TURN,   Vars.FRONTRIGHT_DRIVE_MOTOR_REVERSED, Vars.FRONTRIGHT_TURN_MOTOR_REVERSED,  Vars.FRONTRIGHT_DRIVE_ENCODER_REVERSED,   Vars.FRONTRIGHT_TURN_ENCODER_REVERSED, RobotMap.ID_FRONTRIGHT_CANCODER,  Vars.FRONTRIGHT_CANCODER_REVERSED,  Vars.absoluteEncoderOffsets[1]);
-    rearLeft = new SwerveModule(RobotMap.ID_REARLEFT_DRIVE,    RobotMap.ID_REARLEFT_TURN,      Vars.REARLEFT_DRIVE_MOTOR_REVERSED,   Vars.REARLEFT_TURN_MOTOR_REVERSED,      Vars.REARLEFT_DRIVE_ENCODER_REVERSED,   Vars.REARLEFT_TURN_ENCODER_REVERSED,   RobotMap.ID_REARLEFT_CANCODER,    Vars.REARLEFT_CANCODER_REVERSED,     Vars.absoluteEncoderOffsets[2]);
-    rearRight = new SwerveModule(RobotMap.ID_REARRIGHT_DRIVE,  RobotMap.ID_REARRIGHT_TURN,    Vars.REARRIGHT_DRIVE_MOTOR_REVERSED,   Vars.REARRIGHT_TURN_MOTOR_REVERSED,    Vars.REARRIGHT_DRIVE_ENCODER_REVERSED,   Vars.REARRIGHT_TURN_ENCODER_REVERSED,  RobotMap.ID_REARRIGHT_CANCODER,  Vars.REARRIGHT_CANCODER_REVERSED,  Vars.absoluteEncoderOffsets[3]);
+    frontLeft = new SwerveModule(RobotMap.ID_FRONTLEFT_DRIVE, RobotMap.ID_FRONTLEFT_TURN,
+    Vars.FRONTLEFT_DRIVE_MOTOR_REVERSED, Vars.FRONTLEFT_TURN_MOTOR_REVERSED, Vars.FRONTLEFT_DRIVE_ENCODER_REVERSED, Vars.FRONTLEFT_TURN_ENCODER_REVERSED,
+    RobotMap.ID_FRONTLEFT_CANCODER, Vars.FRONTLEFT_CANCODER_REVERSED, Vars.absoluteEncoderOffsets[0]);
+
+    frontRight = new SwerveModule(RobotMap.ID_FRONTRIGHT_DRIVE, RobotMap.ID_FRONTRIGHT_TURN, 
+    Vars.FRONTRIGHT_DRIVE_MOTOR_REVERSED, Vars.FRONTRIGHT_TURN_MOTOR_REVERSED, Vars.FRONTRIGHT_DRIVE_ENCODER_REVERSED, Vars.FRONTRIGHT_TURN_ENCODER_REVERSED,
+    RobotMap.ID_FRONTRIGHT_CANCODER, Vars.FRONTRIGHT_CANCODER_REVERSED, Vars.absoluteEncoderOffsets[1]);
+
+    rearLeft = new SwerveModule(RobotMap.ID_REARLEFT_DRIVE, RobotMap.ID_REARLEFT_TURN,
+    Vars.REARLEFT_DRIVE_MOTOR_REVERSED,   Vars.REARLEFT_TURN_MOTOR_REVERSED, Vars.REARLEFT_DRIVE_ENCODER_REVERSED, Vars.REARLEFT_TURN_ENCODER_REVERSED,
+    RobotMap.ID_REARLEFT_CANCODER, Vars.REARLEFT_CANCODER_REVERSED, Vars.absoluteEncoderOffsets[2]);
+
+    rearRight = new SwerveModule(RobotMap.ID_REARRIGHT_DRIVE, RobotMap.ID_REARRIGHT_TURN, 
+    Vars.REARRIGHT_DRIVE_MOTOR_REVERSED, Vars.REARRIGHT_TURN_MOTOR_REVERSED, Vars.REARRIGHT_DRIVE_ENCODER_REVERSED, Vars.REARRIGHT_TURN_ENCODER_REVERSED,
+    RobotMap.ID_REARRIGHT_CANCODER,  Vars.REARRIGHT_CANCODER_REVERSED, Vars.absoluteEncoderOffsets[3]);
+
     // no try/catch on navx because if there is no navx, the auto will break regardless
     navx = new AHRS(I2C.Port.kMXP);
     odometry = new SwerveDriveOdometry(Vars.KINEMATICS, Rotation2d.fromDegrees(getAngle()), getSwervePositions());
@@ -135,9 +147,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * Retrives the absolute position of each module.
    * @return an array with each absolute position if each module.
    */
-  public double[] getAbsolutePositions(){
-    return new double[] {frontLeft.getAbsolutePosition(), frontRight.getAbsolutePosition(), rearLeft.getAbsolutePosition(), rearRight.getAbsolutePosition()};
-  }
+  // public double[] getAbsolutePositions(){
+  //   return new double[] {frontLeft.getAbsolutePosition(), frontRight.getAbsolutePosition(), rearLeft.getAbsolutePosition(), rearRight.getAbsolutePosition()};
+  // }
   /**
    * Retrives the absolute position of each module.
    * @return an array with each absolute position if each module.
@@ -241,6 +253,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
      SmartDashboard.putNumber("Navx Angle", getAngle());
      SmartDashboard.putString("Rotation2d", getRotation2d().toString());
      SmartDashboard.putNumber("Heading", getHeading());
+     SmartDashboard.putNumberArray("Absolute Positions", getPositions());
+     SmartDashboard.putNumber("Front Left", frontLeft.getTurnDegrees()*18);
+     SmartDashboard.putNumber("Front Right", frontRight.getTurnDegrees()*18);
+     SmartDashboard.putNumber("Rear Left", rearLeft.getTurnDegrees()*18);
+     SmartDashboard.putNumber("Rear RIght", rearRight.getTurnDegrees()*18);
     //SmartDashboard.putNumberArray("Absolute Encoder Positions", getAbsolutePositions());
     // Each state tells me the angle and speed of each module. (for testing/verifcation)
     // SmartDashboard.putString("FrontLeft State", getSwerveStates()[0].toString());

@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
@@ -40,12 +41,18 @@ public class Vars {
   public static final boolean REARRIGHT_TURN_MOTOR_REVERSED = true;
     
   public static final boolean REARRIGHT_DRIVE_ENCODER_REVERSED = true;
-  public static final boolean REARRIGHT_TURN_ENCODER_REVERSED = false;
+  public static final boolean REARRIGHT_TURN_ENCODER_REVERSED = true;
   public static final boolean REARRIGHT_CANCODER_REVERSED = false;
 
   // Swerve Drive Values
   public static final double SWERVE_TURNMOTOR_KP = 0.7;
   public static final double SWERVE_DRIVEMOTOR_KP = 0.2;
+
+  /* Angle Motor PID Values */
+  public static final double angleKP = 0.7;
+  public static final double angleKI = 0.00;
+  public static final double angleKD = 0.03;
+  public static final double angleKFF = 0.00;
 
   public static final double SWERVE_DRIVEMOTOR_GEARING = 1 / 6.75;
   public static final double SWERVE_TURNMOTOR_GEARING = 1 / 21.42;
@@ -69,7 +76,11 @@ public class Vars {
     // Rear Right
     new Translation2d(Units.inchesToMeters(-11.25), Units.inchesToMeters(-11.25)) 
     };
-  public static final double[] absoluteEncoderOffsets = { 37, 166, 48, -21};
+  //public static final double[] absoluteEncoderOffsets = {-37, -166, -48, 21};
+  //public static final double[] absoluteEncoderOffsets = {-10.8, 3.3, -8.3, 6.2};
+  public static final double[] absoluteEncoderOffsets = {0, 0, 0, 0};
+  //public static final Rotation2d angleOffset = Rotation2d.fromDegrees(327.48046875);
+  //public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);
   // Swerve Drive Kinematics
   public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(swerve);
   // Auto Constraints

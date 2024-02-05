@@ -33,8 +33,9 @@ public class ModuleToDegree extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     m_drive.stopModules();
-    
   }
+
+  int counter = 0;
 
   // Returns true when the command should end.
   @Override
