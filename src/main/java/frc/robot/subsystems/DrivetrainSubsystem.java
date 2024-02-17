@@ -5,6 +5,8 @@
 package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,7 +24,7 @@ import frc.robot.RobotMap;
 import frc.robot.Vars;
 
 public class DrivetrainSubsystem extends SubsystemBase {
-  // Swerve Module Decleration
+  // Swerve Module Declaration
   private final SwerveModule frontLeft,frontRight,rearLeft, rearRight;
   // Swerve Drive (entire drivetrain) odometry
   private final SwerveDriveOdometry odometry;
@@ -31,7 +33,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   // Gyro
   private final AHRS navx;
   private final Field2d field;
-  /** Field Orinted Control (defaulted as true) */
+  //Field Oriented Control (defaulted as true)
   public static boolean FOC = true;
 
   /** Creates a new DrivetrainSubsystem. */
@@ -64,6 +66,16 @@ public class DrivetrainSubsystem extends SubsystemBase {
     //resetEncoders();
     Timer.delay(1);
     setModulesToAbsolute();
+
+    AutoBuilder.configureHolonomic(
+      this::getPose, 
+      this::resetPose, 
+      this::getSpeeds, 
+      null, 
+      null, 
+      null, 
+      null);
+
   }
   /**
    * Sets the module to a specific degree (for testing PID)
@@ -102,6 +114,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     rearLeft.setSwerveState(state[2]);
     rearRight.setSwerveState(state[3]);
   }
+
   /**
    * Sets the state of each module given a chassisspeeds. 
    * @param chassisSpeeds desired chassisSpeeds
@@ -116,9 +129,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
     rearLeft.setSwerveState(state[2]);
     //System.out.println("RL current: " + rearLeft.getTurnDegrees() + "RL Goal" + state[2].angle.getDegrees());
     rearRight.setSwerveState(state[3]);
-    //System.out.println("RR current: " + rearRight.getTurnDegrees() + "RR Goal" + state[3].angle.getDegrees());
-    
+    //System.out.println("RR current: " + rearRight.getTurnDegrees() + "RR Goal" + state[3].angle.getDegrees());  
   }
+
   /**
    * Reset the turn Motors to absolute angle.
    * @param angles
@@ -129,6 +142,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     rearLeft.setModuleToOffset();
     rearRight.setModuleToOffset();
   }
+
   /**
    * Retrives the positions of each module state as an array. Order Matters! Should be the same as you set the module states.
    * @return The Positions of each module in an array.
@@ -136,6 +150,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public SwerveModulePosition[] getSwervePositions(){
    return new SwerveModulePosition[] {frontLeft.getSwerveModulePosition(),frontRight.getSwerveModulePosition(),rearLeft.getSwerveModulePosition(),rearRight.getSwerveModulePosition()};
   }
+
   /**
    *  SwerveState array of all modules
    * @return velocity and angle of module.
@@ -143,6 +158,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public SwerveModuleState[] getSwerveStates(){
     return new SwerveModuleState[] {frontLeft.getSwerveState(), frontRight.getSwerveState(),rearLeft.getSwerveState(), rearRight.getSwerveState()};
   }
+
   /**
    * Retrives the absolute position of each module.
    * @return an array with each absolute position if each module.
@@ -150,6 +166,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   // public double[] getAbsolutePositions(){
   //   return new double[] {frontLeft.getAbsolutePosition(), frontRight.getAbsolutePosition(), rearLeft.getAbsolutePosition(), rearRight.getAbsolutePosition()};
   // }
+
   /**
    * Retrives the absolute position of each module.
    * @return an array with each absolute position if each module.
@@ -157,7 +174,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public double[] getPositions(){
     return new double[] {frontLeft.getTurnDegrees(), frontRight.getTurnDegrees(), rearLeft.getTurnDegrees(), rearRight.getTurnDegrees()};
   }
-  
  
   /**
    *  Average Distance Travelled in inches.
@@ -166,6 +182,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public double getDistance(){
     return ((frontLeft.getDrivePosition() + frontRight.getDrivePosition() + rearLeft.getDrivePosition() + rearRight.getDrivePosition()) / 4);
   }
+
   /**
    * Average Velocity of the robot in inches/second. 
    * @return
@@ -173,6 +190,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public double getVelocity(){
     return ((frontLeft.getDriveVelocity() + frontRight.getDriveVelocity() + rearLeft.getDriveVelocity() + rearRight.getDriveVelocity()) / 4);
   }
+
   /**
    * Returns the degree value of the Rotation2d.
    * @return The degree value of the Rotation2d. (Angle within (-180, 180)
@@ -180,6 +198,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public double getHeading(){
     return navx.getRotation2d().getDegrees();
   }
+
   /**
    * Retrieves the position of the robot on the field.
    * @return The pose of the robot (x and y are in meters).
@@ -187,6 +206,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public Pose2d getPose(){
     return odometry.getPoseMeters();
   }
+
   /**
    * Retrives the Rotation 2d of the robot in degrees.
    * @return Rotation2d of the robot.
@@ -207,11 +227,25 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return navx.getAngle();
   }
   
+  public ChassisSpeeds getSpeeds(){
+    return Vars.KINEMATICS.toChassisSpeeds(getSwerveStates());
+  }
+
+  public void driveFieldRelative(ChassisSpeeds fieldRelativeSpeeds) {
+    driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeeds, getPose().getRotation()));
+  }
+
+  public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
+    ChassisSpeeds targetSpeeds = ChassisSpeeds.discretize(robotRelativeSpeeds, 0.02);
+    SwerveModuleState[] targetStates = Vars.KINEMATICS.toSwerveModuleStates(targetSpeeds);
+    setChassisSpeeds(targetStates);
+  } 
+
   /**
    * Resets the Odometry
    */
-  public void resetOdometry(){
-    odometry.resetPosition(getRotation2d(), getSwervePositions(), getPose());
+  public void resetPose(Pose2d pose){
+    odometry.resetPosition(navx.getRotation2d(), getSwervePositions(), pose);
   }
 
   /**
@@ -265,6 +299,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
     // SmartDashboard.putString("RearLeft State", getSwerveStates()[2].toString());
     // SmartDashboard.putString("RearRight State", getSwerveStates()[3].toString());
     // SmartDashboard.putNumberArray("Positions", getPositions());
-
   }
+
 }
