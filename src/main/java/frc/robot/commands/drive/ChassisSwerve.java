@@ -7,10 +7,10 @@ package frc.robot.commands.drive;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
 
-public class ChassisSwerve extends CommandBase {
+public class ChassisSwerve extends Command {
   private DoubleSupplier m_speed, m_rotation;
   private DrivetrainSubsystem m_drive;
   /** Creates a new TankDrive. */

@@ -8,10 +8,10 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
 
-public class SwerveDriveCommand extends CommandBase {
+public class SwerveDriveCommand extends Command {
   /** Creates a new SwerveDriveCommand. */
   private final DrivetrainSubsystem drive;
   private final DoubleSupplier yInput,xInput,rotInput;
