@@ -7,12 +7,12 @@
 
 package frc.robot.commands.arm;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Vars;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.ArmSubsystem.Arm;
 
-public class ArmPneumatics extends CommandBase {
+public class ArmPneumatics extends Command {
 
   ArmSubsystem m_arm;
   Arm value;

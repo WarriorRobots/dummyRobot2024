@@ -6,7 +6,9 @@ package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
-
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -15,11 +17,13 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.RobotMap;
 import frc.robot.Vars;
 
@@ -68,13 +72,30 @@ public class DrivetrainSubsystem extends SubsystemBase {
     setModulesToAbsolute();
 
     AutoBuilder.configureHolonomic(
+      //'this::method' is the same thing as '()->method()' but more concise (I think)
       this::getPose, 
       this::resetPose, 
       this::getSpeeds, 
-      null, 
-      null, 
-      null, 
-      null);
+      this::driveRobotRelative, 
+      new HolonomicPathFollowerConfig(
+        new PIDConstants(5.0, 0.0, 0.0),
+        new PIDConstants(5.0, 0.0, 0.0),
+        4.5, 
+        0.4, 
+        new ReplanningConfig() // Default path replanning config
+      ),
+      () -> {
+      // Boolean supplier that controls when the path will be mirrored for the red alliance
+      // This will flip the path being followed to the red side of the field.
+      // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+      var alliance = DriverStation.getAlliance();
+      if (alliance.isPresent()) {
+        return alliance.get() == DriverStation.Alliance.Red;
+      }
+      return false;
+      },
+      this
+      );
 
   }
   /**
@@ -87,11 +108,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
     rearLeft.setTurnDegrees(degrees);
     rearRight.setTurnDegrees(degrees);
   }
-  /**
-   * Sets a turn and drive percent to each module.
-   * @param turnPercent
-   * @param drivePercent
-   */
+
+  // /**
+  //  * Sets a turn and drive percent to each module.
+  //  * @param turnPercent
+  //  * @param drivePercent
+  //  */
   public void setDrivePercent(double turnPercent, double drivePercent){
     frontLeft.setDrivePercent(drivePercent);
     frontLeft.setTurnPercent(turnPercent);
@@ -237,8 +259,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
     ChassisSpeeds targetSpeeds = ChassisSpeeds.discretize(robotRelativeSpeeds, 0.02);
-    SwerveModuleState[] targetStates = Vars.KINEMATICS.toSwerveModuleStates(targetSpeeds);
-    setChassisSpeeds(targetStates);
+    setChassisSpeeds(targetSpeeds);
   } 
 
   /**

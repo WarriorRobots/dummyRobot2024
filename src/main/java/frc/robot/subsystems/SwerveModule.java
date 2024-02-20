@@ -5,18 +5,23 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.sensors.AbsoluteSensorRange;
-import com.ctre.phoenix.sensors.CANCoder;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CANcoderConfigurator;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.MotorFeedbackSensor;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxAbsoluteEncoder;
-import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.CANSparkMax.ControlType;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.SparkMaxRelativeEncoder.Type;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -34,12 +39,12 @@ public class SwerveModule {
   private double m_angleOffset;
   //private final double m_absoluteEncoderOffset;
   // Motor Controller Declerations
-  private WPI_TalonFX m_driveMotor;
+  private TalonFX m_driveMotor;
   private CANSparkMax m_turnMotor;
   // CAN Coder
-  private CANCoder m_absoluteEncoder;
+  private CANcoder m_absoluteEncoder;
   private RelativeEncoder m_turnEncoder;
-  private SparkMaxPIDController m_turnController;
+  private SparkPIDController m_turnController;
   /**
    * Creates a SwerveModule for the Drivetrain Subsystem.
    * 
@@ -55,26 +60,27 @@ public class SwerveModule {
   public SwerveModule(int ID_DRIVE, int ID_TURN, boolean MOTOR_DRIVE_REVERSED, boolean MOTOR_TURN_REVERSED,
   boolean ENCODER_DRIVE_REVERSED, boolean ENCODER_TURN_REVERSED, int ID_CANCODER, boolean CANCODER_REVERSED,
   double angleOffset) {
-    // drive motor initalization and config
-    m_driveMotor = new WPI_TalonFX(ID_DRIVE);
-    m_driveMotor.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, Constants.PRIMARY_PID,Constants.MS_TIMEOUT);
+    /* Drive motor initalization and config */
+    m_driveMotor = new TalonFX(ID_DRIVE);
     m_driveMotor.setInverted(MOTOR_DRIVE_REVERSED);
-    m_driveMotor.setSensorPhase(ENCODER_DRIVE_REVERSED);
-    m_driveMotor.config_kP(Constants.PRIMARY_PID, Vars.SWERVE_DRIVEMOTOR_KP);
+    //m_driveMotor.setSensorPhase(ENCODER_DRIVE_REVERSED);
+
+    var driveFeedback = new FeedbackConfigs();
+    driveFeedback.FeedbackRemoteSensorID = Constants.PRIMARY_PID; // Sensor ID
+    m_driveMotor.getConfigurator().apply(driveFeedback);
+    //m_driveMotor.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, Constants.PRIMARY_PID,Constants.MS_TIMEOUT);
+
+    var slot0Configs = new Slot0Configs();
+    slot0Configs.kP = Vars.SWERVE_DRIVEMOTOR_KP; // PID value
+    m_driveMotor.getConfigurator().apply(slot0Configs);
+    //m_driveMotor.config_kP(Constants.PRIMARY_PID, Vars.SWERVE_DRIVEMOTOR_KP);
 
 
-    // turn motor and encoder inialization
-    m_turnMotor = new CANSparkMax(ID_TURN, MotorType.kBrushless);
+    /* Turn motor and encoder inialization */
+    m_turnMotor = new CANSparkMax(ID_TURN, com.revrobotics.CANSparkLowLevel.MotorType.kBrushless);
     m_turnEncoder = m_turnMotor.getEncoder();
     m_turnController = m_turnMotor.getPIDController();
-    // Absolute Encoder initalization and config
-    m_absoluteEncoder = new CANCoder(ID_CANCODER);
-    m_absoluteEncoder.setPositionToAbsolute();
-    // Sets the phase of the encoder, 0 is for relay between a check. 0 ms i.e no
-    // check.
-    m_absoluteEncoder.configSensorDirection(CANCODER_REVERSED, 0);
-    // Sets the range for the absolute sensor.
-    m_absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
+
     // turn last angle
     lastAngle = getSwerveState().angle;
     // turn motor config
@@ -84,10 +90,20 @@ public class SwerveModule {
     m_turnController.setI(Vars.angleKI);
     m_turnController.setD(Vars.angleKD);
     m_turnController.setFF(Vars.angleKFF);
+   
+    /* Absolute Encoder initalization and config */
+    m_absoluteEncoder = new CANcoder(ID_CANCODER);
+    var cancoderConfig = new CANcoderConfiguration();
+    cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive; // Encoder phase
+    cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1; // Absolute sensorr ange
+    m_absoluteEncoder.getConfigurator().apply(cancoderConfig);
+    //m_absoluteEncoder.setPositionToAbsolute();
+    //m_absoluteEncoder.configSensorDirection(CANCODER_REVERSED, 0);
+    //m_absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
 
     // encoder offsets
     m_angleOffset = angleOffset;
-    // sets encoders to 0
+
     resetEncoders();
     
   }
@@ -182,7 +198,7 @@ public class SwerveModule {
    * @return the drive motor's position in inches.
    */
   public double getDrivePosition() {
-    return (double) m_driveMotor.getSelectedSensorPosition() / Constants.CLICKS_PER_REV_INTEGRATED
+    return m_driveMotor.getPosition().getValueAsDouble() / Constants.CLICKS_PER_REV_INTEGRATED
         * Vars.SWERVE_DRIVEMOTOR_GEARING * Math.PI * Vars.WHEEL_DIAMETER;
   }
 
@@ -220,7 +236,7 @@ public class SwerveModule {
    * @return The inches/second of the drive encoder.
    */
   public double getDriveVelocity() {
-    return (double) m_driveMotor.getSelectedSensorVelocity() * 10 / Constants.CLICKS_PER_REV_INTEGRATED
+    return m_driveMotor.getPosition().getValueAsDouble() * 10 / Constants.CLICKS_PER_REV_INTEGRATED
         * Vars.SWERVE_DRIVEMOTOR_GEARING * Math.PI * Vars.WHEEL_DIAMETER;
   }
 
@@ -228,7 +244,7 @@ public class SwerveModule {
    * Resets drive and turn encoders to 0
    */
   public void resetEncoders() {
-    m_driveMotor.setSelectedSensorPosition(0);
+    m_driveMotor.getConfigurator().setPosition(0);
     m_turnEncoder.setPosition(0);
     //m_absoluteEncoder.setPosition(0);
   }
@@ -278,7 +294,8 @@ public class SwerveModule {
    * @param percent from -1 to 1.
    */
   public void setDrivePercent(double percent) { 
-    m_driveMotor.set(ControlMode.PercentOutput, percent);
+    m_driveMotor.setControl(new DutyCycleOut(percent));
+    //m_driveMotor.set(ControlMode.PercentOutput, percent);
   }
 
   /**
@@ -327,7 +344,7 @@ public class SwerveModule {
    */
   public void setSpeed(SwerveModuleState desiredState) {
     double percentOutput = desiredState.speedMetersPerSecond / Vars.SWERVE_MAX_VELOCITY;
-    m_driveMotor.set(ControlMode.PercentOutput, percentOutput);
+    m_driveMotor.setControl(new DutyCycleOut(percentOutput));
   }
 
   /**
