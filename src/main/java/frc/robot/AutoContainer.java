@@ -4,9 +4,16 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.PathPlannerTrajectory;
+
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -16,21 +23,38 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.DashboardContainer.TabsIndex;
 
+import java.time.Instant;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+
+
 /**
  * Singleton to handle auto selection
  */
 public class AutoContainer {
   private ShuffleboardTab autoTab = DashboardContainer.getInstance().getTab(TabsIndex.kAuto);
-  private SendableChooser<Command> chooser = new SendableChooser<Command>();
+  private SendableChooser<Command> chooser;
+  //private SendableChooser<Command> chooser = new SendableChooser<Command>();
   private static AutoContainer instance = null;
 
   // This constructor is private because it is a singleton
   private AutoContainer() {}
 
   private void init() {
-    chooser.addOption("None", new InstantCommand());
 
-    autoTab.add("Auto Selector", chooser).withWidget(BuiltInWidgets.kComboBoxChooser).withPosition(3, 0).withSize(2,1);
+  // Event marker configuration
+  NamedCommands.registerCommand("test", new InstantCommand());
+
+  // Auto configuration
+  chooser = new SendableChooser<Command>();
+  //chooser = AutoBuilder.buildAutoChooser();
+
+  chooser.addOption("None", new InstantCommand());
+
+  // chooser.addOption("Test", AutoBuilder.buildAuto("New Auto"));
+  chooser.addOption("Test", new PathPlannerAuto("New Auto"));  
+
+  autoTab.add("Auto Selector", chooser).withWidget(BuiltInWidgets.kComboBoxChooser).withPosition(3, 0).withSize(2,1);
   }
 
   /**

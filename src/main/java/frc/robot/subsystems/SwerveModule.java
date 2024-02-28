@@ -81,7 +81,7 @@ public class SwerveModule {
     m_turnEncoder = m_turnMotor.getEncoder();
     m_turnController = m_turnMotor.getPIDController();
 
-    // turn last angle
+    // txurn last angle
     lastAngle = getSwerveState().angle;
     // turn motor config
     m_turnMotor.setInverted(MOTOR_TURN_REVERSED);
@@ -190,7 +190,7 @@ public class SwerveModule {
    * @return Rotation2d of the Module.
    */
   public Rotation2d getAngle() {
-    return Rotation2d.fromDegrees(m_turnEncoder.getPosition());
+    return Rotation2d.fromDegrees(m_turnEncoder.getPosition()*18);
     //return Rotation2d.fromDegrees(getTurnDegrees());
   }
 
@@ -236,7 +236,7 @@ public class SwerveModule {
    * @return The inches/second of the drive encoder.
    */
   public double getDriveVelocity() {
-    return m_driveMotor.getPosition().getValueAsDouble() * 10 / Constants.CLICKS_PER_REV_INTEGRATED
+    return m_driveMotor.getVelocity().getValueAsDouble() * 30 / Constants.CLICKS_PER_REV_INTEGRATED
         * Vars.SWERVE_DRIVEMOTOR_GEARING * Math.PI * Vars.WHEEL_DIAMETER;
   }
 

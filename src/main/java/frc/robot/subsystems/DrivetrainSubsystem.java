@@ -78,9 +78,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
       this::getSpeeds, 
       this::driveRobotRelative, 
       new HolonomicPathFollowerConfig(
-        new PIDConstants(5.0, 0.0, 0.0),
-        new PIDConstants(5.0, 0.0, 0.0),
-        4.5, 
+        new PIDConstants(1, 0.0, 0.0),
+        new PIDConstants(1, 0.0, 0.0),
+        .25, 
         0.4, 
         new ReplanningConfig() // Default path replanning config
       ),
@@ -259,6 +259,20 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
     ChassisSpeeds targetSpeeds = ChassisSpeeds.discretize(robotRelativeSpeeds, 0.02);
+    if(Math.abs(targetSpeeds.vxMetersPerSecond)>.25){
+      if(targetSpeeds.vxMetersPerSecond>.25){
+        targetSpeeds.vxMetersPerSecond=.25;
+      } else {
+        targetSpeeds.vxMetersPerSecond=-.25;
+      }
+    }
+    if(Math.abs(targetSpeeds.vyMetersPerSecond)>.25){
+      if(targetSpeeds.vyMetersPerSecond>.25){
+        targetSpeeds.vyMetersPerSecond=.25;
+      } else {
+        targetSpeeds.vyMetersPerSecond=-.25;
+      }
+    }
     setChassisSpeeds(targetSpeeds);
   } 
 
@@ -304,7 +318,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     poseEstimator.update(getRotation2d(), getSwervePositions());
     SmartDashboard.putBoolean("FOC", FOC);
     // SmartDashboard.putNumber("AVR Distance ",getDistance());
-    // SmartDashboard.putNumber("Avr Velcotiy", getVelocity());
+    // SmartDashboard.putNumber("Avr Velocity", getVelocity());
      SmartDashboard.putNumber("Navx Angle", getAngle());
      SmartDashboard.putString("Rotation2d", getRotation2d().toString());
      SmartDashboard.putNumber("Heading", getHeading());
@@ -312,14 +326,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
      SmartDashboard.putNumber("Front Left", frontLeft.getTurnDegrees()*18);
      SmartDashboard.putNumber("Front Right", frontRight.getTurnDegrees()*18);
      SmartDashboard.putNumber("Rear Left", rearLeft.getTurnDegrees()*18);
-     SmartDashboard.putNumber("Rear RIght", rearRight.getTurnDegrees()*18);
+     SmartDashboard.putNumber("Rear Right", rearRight.getTurnDegrees()*18);
     //SmartDashboard.putNumberArray("Absolute Encoder Positions", getAbsolutePositions());
-    // Each state tells me the angle and speed of each module. (for testing/verifcation)
-    // SmartDashboard.putString("FrontLeft State", getSwerveStates()[0].toString());
-    // SmartDashboard.putString("FrontRight State", getSwerveStates()[1].toString());
-    // SmartDashboard.putString("RearLeft State", getSwerveStates()[2].toString());
-    // SmartDashboard.putString("RearRight State", getSwerveStates()[3].toString());
-    // SmartDashboard.putNumberArray("Positions", getPositions());
+    // Each state tells me the angle and speed of each module. (for testing/verification)
+    SmartDashboard.putString("FrontLeft State", getSwerveStates()[0].toString());
+    SmartDashboard.putString("FrontRight State", getSwerveStates()[1].toString());
+    SmartDashboard.putString("RearLeft State", getSwerveStates()[2].toString());
+    SmartDashboard.putString("RearRight State", getSwerveStates()[3].toString());
+    SmartDashboard.putNumberArray("Positions", getPositions());
   }
 
 }
