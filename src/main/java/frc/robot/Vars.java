@@ -87,12 +87,18 @@ public class Vars {
   public static final double AUTO_MAX_M_PER_S = 1; // in/s
   public static final double AUTO_MAX_M_PER_S_SQUARED = 1; // in/s^2
 
-  //Arm Pneumatics
+  // Arm Pneumatics
   public static final int PNEUMATIC_LOOP_COUNT = 10; // # of loops the pneumatics are commanded
 
   // Intake
   public static final boolean INTAKE_REVERSED = true;
   public static final double INTAKE_FORWARD = 0.8;
   public static final double INTAKE_BACKWARD = -1;
+
+  // Shooter
+  public static final boolean SHOOTER_LEFT_REVERSED = true;
+  public static final boolean SHOOTER_RIGHT_REVERSED = false;
+  public static final double SHOOTER_KP = .15; 
+  public static final double SHOOTER_DEFAULT = 5500.0;
 
 }
