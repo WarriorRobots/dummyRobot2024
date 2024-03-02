@@ -6,10 +6,10 @@ package frc.robot.commands.intake;
 
 import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakeSubsystem;
 
-public class RunIntake extends CommandBase {
+public class RunIntake extends Command {
   /** Creates a new RunIntake. */
 
   IntakeSubsystem m_intake;

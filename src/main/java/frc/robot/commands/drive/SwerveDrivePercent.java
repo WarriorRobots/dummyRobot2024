@@ -6,10 +6,10 @@ package frc.robot.commands.drive;
 
 import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
 
-public class SwerveDrivePercent extends CommandBase {
+public class SwerveDrivePercent extends Command {
   /** Creates a new SwerveDrivePercent. */
   DrivetrainSubsystem m_drive;
   DoubleSupplier m_turnPercent, m_drivePercent;

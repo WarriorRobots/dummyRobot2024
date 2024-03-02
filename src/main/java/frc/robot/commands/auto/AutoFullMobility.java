@@ -4,9 +4,9 @@
 
 package frc.robot.commands.auto;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
-public class AutoFullMobility extends CommandBase {
+public class AutoFullMobility extends Command {
   /** Creates a new AutoFullMobility. */
   public AutoFullMobility() {
     // Use addRequirements() here to declare subsystem dependencies.

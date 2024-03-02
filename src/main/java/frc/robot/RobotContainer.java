@@ -30,7 +30,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public static final DrivetrainSubsystem m_drive = new DrivetrainSubsystem();
   //public static final ArmSubsystem m_arm = new ArmSubsystem();
-  //public static final IntakeSubsystem m_intake = new IntakeSubsystem();
+  public static final IntakeSubsystem m_intake = new IntakeSubsystem();
 
   // Drive Command
   // In terms of the robot, the cartesian plane is rotated 90 degrees, i.e X is forward (Y input for controller), Y is horizontal (X input for controller)
@@ -48,8 +48,8 @@ public class RobotContainer {
   // private final ArmPneumatics m_engageArm = new ArmPneumatics(m_arm, Arm.disengage);
 
   // // Intake Commands
-  // private final RunIntake m_forwardIntake = new RunIntake(m_intake, ()->Vars.INTAKE_FORWARD);
-  // private final RunIntake m_backwardIntake = new RunIntake(m_intake, ()-> Vars.INTAKE_BACKWARD);
+  private final RunIntake m_forwardIntake = new RunIntake(m_intake, ()->Vars.INTAKE_FORWARD);
+  private final RunIntake m_backwardIntake = new RunIntake(m_intake, ()-> Vars.INTAKE_BACKWARD);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -77,8 +77,8 @@ public class RobotContainer {
 
   //   IO.xbox2_RB.onTrue(m_engageArm);
   //   IO.xbox2_LB.onTrue(m_disengageArm);
-  //   IO.xbox2_A.whileTrue(m_forwardIntake);
-  //   IO.xbox2_B.whileTrue(m_backwardIntake);
+     IO.xbox2_A.whileTrue(m_forwardIntake);
+     IO.xbox2_B.whileTrue(m_backwardIntake);
   }
 
   /**

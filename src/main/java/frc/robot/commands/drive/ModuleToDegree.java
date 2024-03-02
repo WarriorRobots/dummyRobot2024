@@ -5,11 +5,11 @@
 package frc.robot.commands.drive;
 
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Vars;
 import frc.robot.subsystems.DrivetrainSubsystem;
 
-public class ModuleToDegree extends CommandBase {
+public class ModuleToDegree extends Command {
   /** Creates a new moduleToDegree. */
   DrivetrainSubsystem m_drive;
   public ModuleToDegree(DrivetrainSubsystem drive) {
