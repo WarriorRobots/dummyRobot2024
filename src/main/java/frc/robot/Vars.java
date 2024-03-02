@@ -95,4 +95,7 @@ public class Vars {
   public static final double INTAKE_FORWARD = 0.8;
   public static final double INTAKE_BACKWARD = -1;
 
+  public static final boolean FEED_REVERSED = true;
+  public static final double FEED_FORWARD = 0.8;
+  public static final double FEED_BACKWARD = -1;
 }

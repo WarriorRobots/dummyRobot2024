@@ -31,4 +31,7 @@ public class RobotMap {
   // Intake Motor
   public static final int ID_INTAKE_MOTOR = 5;
     
+  public static final int ID_FEED = 13;
+  public static final int ID_FEED_INFRARED = 9;
+  
 }
