@@ -9,14 +9,17 @@ import frc.robot.commands.arm.ArmPneumatics;
 import frc.robot.commands.drive.ModuleToDegree;
 import frc.robot.commands.drive.SwerveDriveCommand;
 import frc.robot.commands.drive.SwerveDrivePercent;
+import frc.robot.commands.feed.FeedNote;
 import frc.robot.commands.intake.RunIntake;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import frc.robot.subsystems.FeedSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ArmSubsystem.Arm;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -29,8 +32,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public static final DrivetrainSubsystem m_drive = new DrivetrainSubsystem();
+  public static final FeedSubsystem m_feed = new FeedSubsystem();
   //public static final ArmSubsystem m_arm = new ArmSubsystem();
-  //public static final IntakeSubsystem m_intake = new IntakeSubsystem();
+  public static final IntakeSubsystem m_intake = new IntakeSubsystem();
 
   // Drive Command
   // In terms of the robot, the cartesian plane is rotated 90 degrees, i.e X is forward (Y input for controller), Y is horizontal (X input for controller)
@@ -47,10 +51,17 @@ public class RobotContainer {
   // private final ArmPneumatics m_disengageArm = new ArmPneumatics(m_arm, Arm.engage);
   // private final ArmPneumatics m_engageArm = new ArmPneumatics(m_arm, Arm.disengage);
 
-  // // Intake Commands
-  // private final RunIntake m_forwardIntake = new RunIntake(m_intake, ()->Vars.INTAKE_FORWARD);
-  // private final RunIntake m_backwardIntake = new RunIntake(m_intake, ()-> Vars.INTAKE_BACKWARD);
-
+  // Intake Commands
+   private final RunIntake m_forwardIntake = new RunIntake(m_intake, ()->Vars.INTAKE_FORWARD);
+   private final RunIntake m_backwardIntake = new RunIntake(m_intake, ()-> Vars.INTAKE_BACKWARD);
+   private final ParallelCommandGroup m_pickupSequenceForward = new ParallelCommandGroup(
+    new RunIntake(m_intake, ()->Vars.INTAKE_FORWARD),
+    new FeedNote(m_feed, Vars.FEED_FORWARD)
+   );
+   private final ParallelCommandGroup m_pickupSequenceBackward = new ParallelCommandGroup(
+    new RunIntake(m_intake, ()->Vars.INTAKE_BACKWARD),
+    new FeedNote(m_feed, Vars.FEED_BACKWARD)
+   );
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
@@ -75,10 +86,10 @@ public class RobotContainer {
     IO.xbox1_RB.whileTrue(toggleTurboOn);
     IO.xbox1_RB.whileFalse(toggleTurboOff);
 
-  //   IO.xbox2_RB.onTrue(m_engageArm);
-  //   IO.xbox2_LB.onTrue(m_disengageArm);
-  //   IO.xbox2_A.whileTrue(m_forwardIntake);
-  //   IO.xbox2_B.whileTrue(m_backwardIntake);
+    // IO.xbox2_RB.onTrue(m_engageArm);
+    // IO.xbox2_LB.onTrue(m_disengageArm);
+    IO.xbox2_A.whileTrue(m_pickupSequenceForward);
+    IO.xbox2_B.whileTrue(m_pickupSequenceBackward);
   }
 
   /**
