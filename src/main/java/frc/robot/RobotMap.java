@@ -23,12 +23,11 @@ public class RobotMap {
   public static int ID_REARRIGHT_DRIVE = 6;
   public static int ID_REARRIGHT_CANCODER = 3;
 
-  // Arm Motor IDs & Pneumatics
-  public static final int ID_PCM = 0;
-  public static final int ID_ARM_F = 7;
-  public static final int ID_ARM_B = 6;
+  // Arm
+  public static int ID_ARM = 11;
+  public static int ID_ARM_CANCODER = 5;
 
   // Intake Motor
-  public static final int ID_INTAKE_MOTOR = 5;
+  public static int ID_INTAKE_MOTOR = 5;
     
 }

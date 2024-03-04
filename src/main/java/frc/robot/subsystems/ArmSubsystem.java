@@ -1,105 +1,131 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) 2019 FIRST. All Rights Reserved.                             */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
-/*----------------------------------------------------------------------------*/
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotMap;
+import javax.print.CancelablePrintJob;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.SparkPIDController;
+
+import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.RobotMap;
+import frc.robot.Vars;
 
-/** Arm Subsystem. */
 public class ArmSubsystem extends SubsystemBase {
+  /** Creates a new ArmSubsystem. */
+  // Top Motor Declaration
+  private CANSparkMax m_arm;
+  private CANcoder m_armEncoder;
+  private SparkPIDController m_armController;
 
-  private DoubleSolenoid m_arm;
 
   public ArmSubsystem() {
-    m_arm = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, RobotMap.ID_ARM_F, RobotMap.ID_ARM_B);
-    m_arm.set(DoubleSolenoid.Value.kOff);
+    // Configuration
+    m_arm = new CANSparkMax(RobotMap.ID_ARM, com.revrobotics.CANSparkLowLevel.MotorType.kBrushless);
+    m_armEncoder = new CANcoder(RobotMap.ID_ARM_CANCODER);
+    m_armController = m_arm.getPIDController();
+
+    // turn motor config
+    m_arm.setInverted(Vars.ARM_REVERSED);
+    m_arm.setCANTimeout(Constants.MS_TIMEOUT);
+    m_armController.setP(Vars.angleKP);
+    m_armController.setI(Vars.angleKI);
+    m_armController.setD(Vars.angleKD);
+    m_armController.setFF(Vars.angleKFF);
+   
+    /* Absolute Encoder initalization and config */
+    m_armEncoder = new CANcoder(RobotMap.ID_ARM_CANCODER);
+    var cancoderConfig = new CANcoderConfiguration();
+    cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive; // Encoder phase
+    cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1; // Absolute sensor range
+    m_armEncoder.getConfigurator().apply(cancoderConfig);
+    //m_absoluteEncoder.setPositionToAbsolute();
+    //m_absoluteEncoder.configSensorDirection(CANCODER_REVERSED, 0);
+    //m_absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
+
+    // encoder offsets
+    resetEncoders();
+
   }
 
   /**
-   * Set the value of the arm. <p>
-   * @param value A {@link DoubleSolenoid.Value}
-   * @see #stopArm
-   * @see #engageArm
-   * @see #disengageArm
+   * Runs the Arms at a percent from -1 to 1
+   * 
+   * @param top    percent from -1 to 1
    */
-  public void setArm(Arm state) {
-    m_arm.set(state.getValue());
+  public void setPercent(double top) {
+    m_arm.set(top);
+  }
+
+  // Sets the arm to the given unbounded angle (NO SAFETY)
+  public void setArmAngleUnbounded(double degrees) {
+    m_arm.set(toNativeTop(degrees));
+  }
+
+  public void setAngleUnbounded(double topDegrees) {
+    setArmAngleUnbounded(topDegrees);
+  }
+
+  // Sets the arm to the given bounded angle
+  public void setAngleBounded(double top) {
+    setArmAngleBounded(top);
   }
 
   /**
-   * kOff -> None/stop <p>
-   * kReverse -> Engage arm <p>
-   * kForward -> Disengage arm <p>
+   * Sets the angle of the Top arm bounded (in degrees)
+   * 
+   * @param degrees
    */
-  public static enum Arm {
-    stop(DoubleSolenoid.Value.kOff),
-    engage(DoubleSolenoid.Value.kReverse),
-    disengage(DoubleSolenoid.Value.kForward);
-    public DoubleSolenoid.Value value;
-    Arm(DoubleSolenoid.Value value) {
-      this.value = value;
+  public void setArmAngleBounded(double degrees) {
+    if (degrees < Vars.ARM_MIN_ANGLE) {
+      setArmAngleUnbounded(Vars.ARM_MIN_ANGLE);
+    } else if (degrees > Vars.ARM_MAX_ANGLE) {
+      setArmAngleUnbounded(Vars.ARM_MAX_ANGLE);
+    } else {
+      setArmAngleUnbounded(degrees);
     }
-    public DoubleSolenoid.Value getValue() {
-      return value;
-    }
   }
 
-  /**
-   * Used to stop giving pressure to the arm in either direction.
-   * This neither remove nor adds pressure, therefore maintaining the previous state.
-   * This must be called after several loops of the forwards as to not overwork the pneumatics.
-   */
-  public void stopArm() {
-    setArm(Arm.stop);
+  public double getTopEnc() {
+    return m_armEncoder.getPosition().getValueAsDouble();
   }
 
-  /**
-   * Pulls arm into the scoring position.
-   */
-  public void engageArm() {
-    setArm(Arm.engage);
+  public double getArmAngle() {
+    return toDegreesTop(getTopEnc());
   }
 
-  /**
-   * Pushes arm out of the scoring position.
-   */
-  public void disengageArm() {
-    setArm(Arm.disengage);
+
+  public double toNativeTop(double degrees) {
+    return Math.round(degrees / Vars.ARM_GEARING * Constants.CLICKS_PER_REV_QUADRATURE / 360.0);
   }
 
-  /**
-   * The stop command is private because the two components of the climb should be stopped
-   * individually as there is no time either should be stopped in unison.
-   */
-  @SuppressWarnings("unused")
-  private void stop() {}
+  public double toDegreesTop(double nativeUnits) {
+    return nativeUnits * Vars.ARM_GEARING / Constants.CLICKS_PER_REV_QUADRATURE * 360.0;
+  }
+
+  public void resetEncoders() {
+    m_armEncoder.setPosition(0);
+  }
+
+  public void stop() {
+    m_arm.stopMotor();
+  }
 
   @Override
   public void periodic() {
-    //putDashboard();
+  SmartDashboard.putNumber("Arm Angle", getArmAngle());
   }
-
-  // /**
-  //  * Puts information about this subsystem on the dashboard.
-  //  */
-  // public void putDashboard() {
-  //   switch (DashboardContainer.getInstance().getVerbosity()) {
-  //     case 2:
-  //       SmartDashboard.putString("Arm", m_arm.get().toString());
-  //     case 1:
-	// 		  break;
-	// 		default:
-  //       break;
-  //   }
-  // }
 
 }
