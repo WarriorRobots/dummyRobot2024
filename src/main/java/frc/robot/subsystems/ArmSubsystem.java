@@ -13,7 +13,9 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.wpilibj.Counter;
@@ -25,16 +27,16 @@ import frc.robot.Vars;
 
 public class ArmSubsystem extends SubsystemBase {
   /** Creates a new ArmSubsystem. */
-  // Top Motor Declaration
+  // Motor Declaration
   private CANSparkMax arm_left, arm_right;
-  private CANcoder m_armEncoder;
+  private RelativeEncoder m_armEncoder;
   private SparkPIDController m_armController;
 
 
   public ArmSubsystem() {
     // Configuration
     arm_left = new CANSparkMax(RobotMap.ID_ARM_LEFT, com.revrobotics.CANSparkLowLevel.MotorType.kBrushless);
-    m_armEncoder = new CANcoder(RobotMap.ID_ARM_CANCODER);
+    m_armEncoder = arm_left.getEncoder();
     m_armController = arm_left.getPIDController();
 
     // turn motor config
@@ -44,16 +46,6 @@ public class ArmSubsystem extends SubsystemBase {
     m_armController.setI(Vars.angleKI);
     m_armController.setD(Vars.angleKD);
     m_armController.setFF(Vars.angleKFF);
-   
-    /* Absolute Encoder initalization and config */
-    m_armEncoder = new CANcoder(RobotMap.ID_ARM_CANCODER);
-    var cancoderConfig = new CANcoderConfiguration();
-    cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive; // Encoder phase
-    cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1; // Absolute sensor range
-    m_armEncoder.getConfigurator().apply(cancoderConfig);
-    //m_absoluteEncoder.setPositionToAbsolute();
-    //m_absoluteEncoder.configSensorDirection(CANCODER_REVERSED, 0);
-    //m_absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
 
     arm_right = new CANSparkMax(RobotMap.ID_ARM_RIGHT, com.revrobotics.CANSparkLowLevel.MotorType.kBrushless);
     arm_right.follow(arm_left);
@@ -67,28 +59,28 @@ public class ArmSubsystem extends SubsystemBase {
   /**
    * Runs the Arms at a percent from -1 to 1
    * 
-   * @param top    percent from -1 to 1
+   * @param percent percent from -1 to 1
    */
-  public void setPercent(double top) {
-    arm_left.set(top);
+  public void setPercent(double percent) {
+    arm_left.set(percent);
   }
 
   // Sets the arm to the given unbounded angle (NO SAFETY)
   public void setArmAngleUnbounded(double degrees) {
-    arm_left.set(toNativeTop(degrees));
+    arm_left.set(toNative(degrees));
   }
 
-  public void setAngleUnbounded(double topDegrees) {
-    setArmAngleUnbounded(topDegrees);
+  public void setAngleUnbounded(double degrees) {
+    setArmAngleUnbounded(degrees);
   }
 
   // Sets the arm to the given bounded angle
-  public void setAngleBounded(double top) {
-    setArmAngleBounded(top);
+  public void setAngleBounded(double degrees) {
+    setArmAngleBounded(degrees);
   }
 
   /**
-   * Sets the angle of the Top arm bounded (in degrees)
+   * Sets the angle of the bounded arm (in degrees)
    * 
    * @param degrees
    */
@@ -102,21 +94,21 @@ public class ArmSubsystem extends SubsystemBase {
     }
   }
 
-  public double getTopEnc() {
-    return m_armEncoder.getPosition().getValueAsDouble();
+  public double getArmEnc() {
+    return m_armEncoder.getPosition();
   }
 
   public double getArmAngle() {
-    return toDegreesTop(getTopEnc());
+    return toDegrees(getArmEnc());
   }
 
 
-  public double toNativeTop(double degrees) {
-    return Math.round(degrees / Vars.ARM_GEARING * Constants.CLICKS_PER_REV_QUADRATURE / 360.0);
+  public double toNative(double degrees) {
+    return Math.round(degrees / Vars.ARM_GEARING * Constants.CLICKS_PER_REV_INTEGRATED / (360.0*12));
   }
 
-  public double toDegreesTop(double nativeUnits) {
-    return nativeUnits * Vars.ARM_GEARING / Constants.CLICKS_PER_REV_QUADRATURE * 360.0;
+  public double toDegrees(double nativeUnits) {
+    return nativeUnits * Vars.ARM_GEARING / Constants.CLICKS_PER_REV_INTEGRATED * (360.0*12);
   }
 
   public void resetEncoders() {
@@ -129,6 +121,7 @@ public class ArmSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+  SmartDashboard.putNumber("Encoder value", getArmEnc());
   SmartDashboard.putNumber("Arm Angle", getArmAngle());
   }
 

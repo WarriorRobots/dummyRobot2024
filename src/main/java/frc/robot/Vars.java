@@ -95,16 +95,19 @@ public class Vars {
   public static final double ARM_KI = 0.000085;
   public static final double ARM_KD = 0.0000085;
   public static final double ARM_KF = 0;
-  public static final double ARM_GEARING = 1 / 3.2; // input/output
+  public static final double ARM_GEARING = 1 / 1; // input/output
   // Top Arm Angle Values
   public static final double ARM_MAX_ANGLE = 110; // degrees
   public static final double ARM_MIN_ANGLE = 0; // degrees
   public static final double ARM_TOLERANCE = 10; // Degrees
 
+  // Feed
+  public static final boolean FEED_REVERSED = false;
+
   // Intake
-  public static final boolean INTAKE_REVERSED = true;
-  public static final double INTAKE_FORWARD = 0.8;
-  public static final double INTAKE_BACKWARD = -1;
+  public static final boolean INTAKE_REVERSED = false;
+  public static final double INTAKE_FORWARD = 0.5;
+  public static final double INTAKE_BACKWARD = -0.5;
 
   // Shooter
   public static final boolean SHOOTER_TOP_REVERSED = true;

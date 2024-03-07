@@ -3,9 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
-import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
@@ -14,14 +12,14 @@ import frc.robot.Vars;
 public class IntakeSubsystem extends SubsystemBase {
   /** Creates a new IntakeSubsystem. */
 
-  private TalonFX intake_top, intake_bottom;
+  private WPI_TalonSRX intake_top, intake_bottom;
 
   public IntakeSubsystem() {
-    intake_top = new TalonFX(RobotMap.ID_INTAKE_TOP);
+    intake_top = new WPI_TalonSRX(RobotMap.ID_INTAKE_TOP);
     intake_top.setInverted(Vars.INTAKE_REVERSED);
 
-    intake_bottom = new TalonFX(RobotMap.ID_INTAKE_BOTTOM);
-    intake_bottom.setControl(new Follower(intake_top.getDeviceID(), true));
+    intake_bottom = new WPI_TalonSRX(RobotMap.ID_INTAKE_BOTTOM);
+    intake_bottom.follow(intake_top);
 
   }
 
@@ -32,14 +30,14 @@ public class IntakeSubsystem extends SubsystemBase {
   */
   public void setPercentage(double top)
   {
-    intake_top.setControl(new DutyCycleOut(top));
+    intake_top.set(top);
   }
   /**
    * The percent output of the motor
    * @return Percent -1.0 to 1.0 that is commanded to the motor
    */
   public double getGain() {
-    return intake_top.getDutyCycle().getValueAsDouble();
+    return intake_top.getMotorOutputPercent();
   }
   /**
   * Stops the Intake motors.
