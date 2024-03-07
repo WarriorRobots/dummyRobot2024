@@ -95,7 +95,7 @@ public class SwerveModule {
     m_absoluteEncoder = new CANcoder(ID_CANCODER);
     var cancoderConfig = new CANcoderConfiguration();
     cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive; // Encoder phase
-    cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1; // Absolute sensorr ange
+    cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1; // Absolute sensor range
     m_absoluteEncoder.getConfigurator().apply(cancoderConfig);
     //m_absoluteEncoder.setPositionToAbsolute();
     //m_absoluteEncoder.configSensorDirection(CANCODER_REVERSED, 0);
