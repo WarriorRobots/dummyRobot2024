@@ -26,20 +26,20 @@ import frc.robot.Vars;
 public class ArmSubsystem extends SubsystemBase {
   /** Creates a new ArmSubsystem. */
   // Top Motor Declaration
-  private CANSparkMax m_arm;
+  private CANSparkMax arm_left, arm_right;
   private CANcoder m_armEncoder;
   private SparkPIDController m_armController;
 
 
   public ArmSubsystem() {
     // Configuration
-    m_arm = new CANSparkMax(RobotMap.ID_ARM, com.revrobotics.CANSparkLowLevel.MotorType.kBrushless);
+    arm_left = new CANSparkMax(RobotMap.ID_ARM_LEFT, com.revrobotics.CANSparkLowLevel.MotorType.kBrushless);
     m_armEncoder = new CANcoder(RobotMap.ID_ARM_CANCODER);
-    m_armController = m_arm.getPIDController();
+    m_armController = arm_left.getPIDController();
 
     // turn motor config
-    m_arm.setInverted(Vars.ARM_REVERSED);
-    m_arm.setCANTimeout(Constants.MS_TIMEOUT);
+    arm_left.setInverted(Vars.LEFT_ARM_REVERSED);
+    arm_left.setCANTimeout(Constants.MS_TIMEOUT);
     m_armController.setP(Vars.angleKP);
     m_armController.setI(Vars.angleKI);
     m_armController.setD(Vars.angleKD);
@@ -55,6 +55,10 @@ public class ArmSubsystem extends SubsystemBase {
     //m_absoluteEncoder.configSensorDirection(CANCODER_REVERSED, 0);
     //m_absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
 
+    arm_right = new CANSparkMax(RobotMap.ID_ARM_RIGHT, com.revrobotics.CANSparkLowLevel.MotorType.kBrushless);
+    arm_right.follow(arm_left);
+    arm_right.setInverted(Vars.RIGHT_ARM_REVERSED);
+
     // encoder offsets
     resetEncoders();
 
@@ -66,12 +70,12 @@ public class ArmSubsystem extends SubsystemBase {
    * @param top    percent from -1 to 1
    */
   public void setPercent(double top) {
-    m_arm.set(top);
+    arm_left.set(top);
   }
 
   // Sets the arm to the given unbounded angle (NO SAFETY)
   public void setArmAngleUnbounded(double degrees) {
-    m_arm.set(toNativeTop(degrees));
+    arm_left.set(toNativeTop(degrees));
   }
 
   public void setAngleUnbounded(double topDegrees) {
@@ -120,7 +124,7 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public void stop() {
-    m_arm.stopMotor();
+    arm_left.stopMotor();
   }
 
   @Override

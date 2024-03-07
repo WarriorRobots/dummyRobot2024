@@ -12,8 +12,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.DashboardContainer;
 
-import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -33,8 +31,8 @@ import frc.robot.DashboardContainer.TabsIndex;
  */
 public class ShooterSubsystem extends SubsystemBase {
   
-  private TalonFX shooter_left;
-  private TalonFX slave_right;
+  private TalonFX shooter_top;
+  private TalonFX shooter_bottom;
   
   /** Number of encoder clicks per every revolution of the encoder */
   static final int CLICKS_PER_REV = 2048; // https://phoenix-documentation.readthedocs.io/en/latest/ch14_MCSensor.html#sensor-resolution
@@ -55,21 +53,21 @@ public class ShooterSubsystem extends SubsystemBase {
 	 */
   public ShooterSubsystem()
   {
-    shooter_left = new TalonFX(RobotMap.ID_SHOOTER_LEFT);
+    shooter_top = new TalonFX(RobotMap.ID_SHOOTER_TOP);
     
-    shooter_left.setInverted(Vars.SHOOTER_LEFT_REVERSED);    
+    shooter_top.setInverted(Vars.SHOOTER_TOP_REVERSED);    
 
     var shooterFeedback = new FeedbackConfigs();
     shooterFeedback.FeedbackRemoteSensorID = Constants.PRIMARY_PID; // Sensor ID
-    shooter_left.getConfigurator().apply(shooterFeedback);
+    shooter_top.getConfigurator().apply(shooterFeedback);
 
     var slot0Configs = new Slot0Configs();
     slot0Configs.kP = Vars.SHOOTER_KP;
-    shooter_left.getConfigurator().apply(slot0Configs);   
+    shooter_top.getConfigurator().apply(slot0Configs);   
     
-    slave_right = new TalonFX(RobotMap.ID_SHOOTER_RIGHT);
-    slave_right.setControl(new Follower(shooter_left.getDeviceID(), false));
-    //slave_right.setInverted(Vars.SHOOTER_RIGHT_REVERSED);
+    shooter_bottom = new TalonFX(RobotMap.ID_SHOOTER_BOTTOM);
+    shooter_bottom.setControl(new Follower(shooter_top.getDeviceID(), true));
+    //shooter_bottom.setInverted(Vars.SHOOTER_RIGHT_REVERSED);
     
   }
 
@@ -79,7 +77,7 @@ public class ShooterSubsystem extends SubsystemBase {
    */
   public void setVoltage(double voltage)
   {
-    shooter_left.setControl(new DutyCycleOut(voltage));
+    shooter_top.setControl(new DutyCycleOut(voltage));
   }
 
   /**
@@ -88,7 +86,7 @@ public class ShooterSubsystem extends SubsystemBase {
    */
   public void setRPM(double rpm)
   {
-    shooter_left.setControl(new DutyCycleOut(toNative(rpm)));
+    shooter_top.setControl(new DutyCycleOut(toNative(rpm)));
   }
 
   /**
@@ -96,7 +94,7 @@ public class ShooterSubsystem extends SubsystemBase {
    */
   public double getGain()
   {
-    return shooter_left.getDutyCycle().getValueAsDouble();
+    return shooter_top.getDutyCycle().getValueAsDouble();
   }
 
   /**
@@ -105,21 +103,21 @@ public class ShooterSubsystem extends SubsystemBase {
   public double getRPM()
   {
     // (native / 100ms) * (600ms / m) * (rev/native) = rev / m
-    return toRPM(shooter_left.getPosition().getValueAsDouble());
+    return toRPM(shooter_top.getPosition().getValueAsDouble());
   }
 
   /**
    * @return the raw encoder value.
    */
   public double getEncoder() {
-    return shooter_left.getPosition().getValueAsDouble();
+    return shooter_top.getPosition().getValueAsDouble();
   }
 
   /**
    * @return the velocity of the motor in 
    */
   public double getEncVelocity() {
-    return shooter_left.getPosition().getValueAsDouble();
+    return shooter_top.getPosition().getValueAsDouble();
   }
 
   /**
@@ -157,7 +155,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void stop() {
-    shooter_left.stopMotor();
+    shooter_top.stopMotor();
   }
 
   @Override

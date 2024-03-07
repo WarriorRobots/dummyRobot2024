@@ -89,7 +89,8 @@ public class Vars {
 
   // Arm 
   //TODO update arm values
-  public static final boolean ARM_REVERSED = true;
+  public static final boolean LEFT_ARM_REVERSED = false;
+  public static final boolean RIGHT_ARM_REVERSED = true;
   public static final double ARM_KP = 0.3;
   public static final double ARM_KI = 0.000085;
   public static final double ARM_KD = 0.0000085;
@@ -104,5 +105,11 @@ public class Vars {
   public static final boolean INTAKE_REVERSED = true;
   public static final double INTAKE_FORWARD = 0.8;
   public static final double INTAKE_BACKWARD = -1;
+
+  // Shooter
+  public static final boolean SHOOTER_TOP_REVERSED = true;
+  public static final boolean SHOOTER_BOTTOM_REVERSED = false;
+  public static final double SHOOTER_KP = .15; 
+  public static final double SHOOTER_DEFAULT = 5500.0;
 
 }

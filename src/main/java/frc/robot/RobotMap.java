@@ -7,27 +7,39 @@ package frc.robot;
 /**  All CAN IDs reside here. */
 public class RobotMap {
   // Front Left Module IDs
-  public static int ID_FRONTLEFT_TURN = 8;
-  public static int ID_FRONTLEFT_DRIVE = 0;
-  public static int ID_FRONTLEFT_CANCODER = 0;
+  public static int ID_FRONTLEFT_TURN = 1;
+  public static int ID_FRONTLEFT_DRIVE = 1;
+  public static int ID_FRONTLEFT_CANCODER = 1;
   // Front Right Module IDs
-  public static int ID_FRONTRIGHT_TURN = 3;
+  public static int ID_FRONTRIGHT_TURN = 2;
   public static int ID_FRONTRIGHT_DRIVE = 2;
-  public static int ID_FRONTRIGHT_CANCODER = 1;
+  public static int ID_FRONTRIGHT_CANCODER = 2;
   // REAR LEFT Module IDs
-  public static int ID_REARLEFT_TURN = 5;
-  public static int ID_REARLEFT_DRIVE = 4;
-  public static int ID_REARLEFT_CANCODER = 2;
+  public static int ID_REARLEFT_TURN = 3;
+  public static int ID_REARLEFT_DRIVE = 3;
+  public static int ID_REARLEFT_CANCODER = 3;
   // REAR RIGHT Module IDs
-  public static int ID_REARRIGHT_TURN = 7;
-  public static int ID_REARRIGHT_DRIVE = 6;
-  public static int ID_REARRIGHT_CANCODER = 3;
-
-  // Arm
-  public static int ID_ARM = 11;
-  public static int ID_ARM_CANCODER = 5;
+  public static int ID_REARRIGHT_TURN = 4;
+  public static int ID_REARRIGHT_DRIVE = 4;
+  public static int ID_REARRIGHT_CANCODER = 4;
 
   // Intake Motor
   public static int ID_INTAKE_MOTOR = 5;
+
+  // Feed Motor
+  public static final int ID_FEED = 0;
+
+  // Intake Motor
+  public static final int ID_INTAKE_TOP = 5;
+  public static final int ID_INTAKE_BOTTOM = 6;
+
+  // Arm
+  public static final int ID_ARM_LEFT = 5;
+  public static final int ID_ARM_RIGHT = 6;
+  public static final int ID_ARM_CANCODER = 0;
+
+  // Shooter Motor
+  public static final int ID_SHOOTER_TOP = 7;
+  public static final int ID_SHOOTER_BOTTOM = 8;
     
 }
