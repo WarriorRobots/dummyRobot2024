@@ -42,4 +42,7 @@ public class RobotMap {
   public static final int ID_SHOOTER_TOP = 7;
   public static final int ID_SHOOTER_BOTTOM = 8;
     
+  public static final int ID_FEED = 13;
+  public static final int ID_FEED_INFRARED = 9;
+  
 }
