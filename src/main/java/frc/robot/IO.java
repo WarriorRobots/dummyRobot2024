@@ -46,7 +46,7 @@ public class IO {
   // protected static final JoystickButton rightJoystick_12 = new JoystickButton(m_rightJoystick, 12);
 
   protected static final JoystickButton xbox1_A = new JoystickButton(m_xbox1, 1);
-  protected static final JoystickButton xbox1_B= new JoystickButton(m_xbox1, 2);
+  protected static final JoystickButton xbox1_B = new JoystickButton(m_xbox1, 2);
   protected static final JoystickButton xbox1_X = new JoystickButton(m_xbox1, 3);
   protected static final JoystickButton xbox1_Y = new JoystickButton(m_xbox1, 4);
   protected static final JoystickButton xbox1_LB = new JoystickButton(m_xbox1, 5);
@@ -56,10 +56,10 @@ public class IO {
   protected static final JoystickButton xbox1_L_JOYSTICK = new JoystickButton(m_xbox1, 9);
   protected static final JoystickButton xbox1_R_JOYSTICK = new JoystickButton(m_xbox1, 10);
 
-  protected static final POVButton xbox1Up = new POVButton(m_xbox1,0);
-  protected static final POVButton xbox1Down = new POVButton(m_xbox1, 180);
-  protected static final POVButton xbox1Left = new POVButton(m_xbox1, 270);
-  protected static final POVButton xbox1Right = new POVButton(m_xbox1, 90);
+  protected static final POVButton xbox1_Up = new POVButton(m_xbox1,0);
+  protected static final POVButton xbox1_Down = new POVButton(m_xbox1, 180);
+  protected static final POVButton xbox1_Left = new POVButton(m_xbox1, 270);
+  protected static final POVButton xbox1_Right = new POVButton(m_xbox1, 90);
 
   protected static final JoystickButton xbox2_A = new JoystickButton(m_xbox2, 1);
   protected static final JoystickButton xbox2_B= new JoystickButton(m_xbox2, 2);
@@ -72,10 +72,10 @@ public class IO {
   protected static final JoystickButton xbox2_L_JOYSTICK = new JoystickButton(m_xbox2, 9);
   protected static final JoystickButton xbox2_R_JOYSTICK = new JoystickButton(m_xbox2, 10);
 
-  protected static final POVButton xbox2Up = new POVButton(m_xbox2,0);
-  protected static final POVButton xbox2Down = new POVButton(m_xbox2, 180);
-  protected static final POVButton xbox2Left = new POVButton(m_xbox2, 270);
-  protected static final POVButton xbox2Right = new POVButton(m_xbox2, 90);
+  protected static final POVButton xbox2_Up = new POVButton(m_xbox2,0);
+  protected static final POVButton xbox2_Down = new POVButton(m_xbox2, 180);
+  protected static final POVButton xbox2_Left = new POVButton(m_xbox2, 270);
+  protected static final POVButton xbox2_Right = new POVButton(m_xbox2, 90);
    
 
 
@@ -112,7 +112,7 @@ public class IO {
   // } 
   
   protected static double getXBox1LeftX()  {
-    if(-.12<=m_xbox1.getLeftX() && m_xbox1.getLeftX()<=.12){ //deadzone threshold
+    if(-.08<=m_xbox1.getLeftX() && m_xbox1.getLeftX()<=.08){ //deadzone threshold
       return 0;
     }else{
     return m_xbox1.getLeftX();
@@ -122,7 +122,7 @@ public class IO {
   protected static double getXBox1LeftY()
   {
     //up is -1 on joystick
-    if(-.12<=m_xbox1.getLeftY()*-1 && m_xbox1.getLeftY()*-1<=.12){ //deadzone threshold
+    if(-.08<=m_xbox1.getLeftY()*-1 && m_xbox1.getLeftY()*-1<=.08){ //deadzone threshold
       return 0;
     }else{
     return m_xbox1.getLeftY() * -1;

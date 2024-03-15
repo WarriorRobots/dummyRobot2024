@@ -20,7 +20,7 @@ import frc.robot.Vars;
 public class FeedSubsystem extends SubsystemBase {
 
   private WPI_TalonSRX m_feed;
-  private DigitalInput m_infraredSensor;
+  //private DigitalInput m_infraredSensor = new DigitalInput(RobotMap.ID_FEED_INFRARED) ;
 
   /**
    * Creates a new Intake.
@@ -29,22 +29,23 @@ public class FeedSubsystem extends SubsystemBase {
     m_feed = new WPI_TalonSRX(RobotMap.ID_FEED);
     m_feed.setInverted(Vars.FEED_REVERSED);
 
-    m_infraredSensor = new DigitalInput(RobotMap.ID_FEED_INFRARED);
+    //m_infraredSensor = new DigitalInput(RobotMap.ID_FEED_INFRARED);
   }
 
   // Spins the motor at some low value and other for a specific percent, 
 
-  public void feedAtPercent(double voltage)
+  public void feedAtPercent(double percent)
   {
-    m_feed.set(ControlMode.PercentOutput, voltage);
+    m_feed.set(ControlMode.PercentOutput, percent);
   }
 
   /**
-   * Detects if a ball is inside of the feed.
-   * @return True if a ball is present, false if otherwise.
+   * Detects if a note is inside of the feed.
+   * @return True if a note is present, false if otherwise.
    */
   public boolean containsNote() {
-    return !m_infraredSensor.get(); // infrared reads false when it sees a ball
+    return false;
+    //return !m_infraredSensor.get(); // infrared reads false when it sees a note
   }
 
   public void stop() {
@@ -53,20 +54,7 @@ public class FeedSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    putDashboard();   
+    SmartDashboard.putBoolean("Feed/Has note", containsNote()); 
   }
 
-  public void putDashboard() {
-    switch (DashboardContainer.getInstance().getVerbosity()) {
-			case 5:
-			case 4:
-			case 3:
-			case 2:
-        SmartDashboard.putBoolean("Feed/Has note", containsNote());
-			case 1:
-			  break;
-			default:
-        break;
-    }
-  }
 }

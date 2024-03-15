@@ -16,6 +16,8 @@ import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.networktables.GenericEntry;
@@ -67,7 +69,9 @@ public class ShooterSubsystem extends SubsystemBase {
     
     shooter_bottom = new TalonFX(RobotMap.ID_SHOOTER_BOTTOM);
     shooter_bottom.setControl(new Follower(shooter_top.getDeviceID(), true));
-    //shooter_bottom.setInverted(Vars.SHOOTER_RIGHT_REVERSED);
+
+    shooter_bottom.getConfigurator().apply(shooterFeedback);
+    shooter_bottom.getConfigurator().apply(slot0Configs);    
     
   }
 
@@ -86,7 +90,9 @@ public class ShooterSubsystem extends SubsystemBase {
    */
   public void setRPM(double rpm)
   {
-    shooter_top.setControl(new DutyCycleOut(toNative(rpm)));
+    shooter_top.setControl(new VelocityDutyCycle(toNative(rpm)));
+    //shooter_top.setControl(new VelocityVoltage(toNative(rpm*60)));
+    //shooter_top.setControl(new DutyCycleOut(toNative(rpm)));
   }
 
   /**
@@ -102,8 +108,7 @@ public class ShooterSubsystem extends SubsystemBase {
    */
   public double getRPM()
   {
-    // (native / 100ms) * (600ms / m) * (rev/native) = rev / m
-    return toRPM(shooter_top.getPosition().getValueAsDouble());
+    return getEncVelocity()*60;
   }
 
   /**
@@ -117,17 +122,7 @@ public class ShooterSubsystem extends SubsystemBase {
    * @return the velocity of the motor in 
    */
   public double getEncVelocity() {
-    return shooter_top.getPosition().getValueAsDouble();
-  }
-
-  /**
-   * Converts from native units per 100ms to RPM.
-   * @param native_units Native units / 100ms
-   * @return RPM
-   */
-  public static double toRPM(double native_units)
-  { 
-    return ((native_units * 600) / CLICKS_PER_REV);
+    return shooter_top.getVelocity().getValueAsDouble();
   }
 
   /**
@@ -151,7 +146,7 @@ public class ShooterSubsystem extends SubsystemBase {
    */
   public static double toNative(double rpm)
   { 
-    return ((rpm / 600) * CLICKS_PER_REV);
+    return rpm/60;
   }
 
   public void stop() {
@@ -160,23 +155,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    putDashboard();
+    SmartDashboard.putNumber("Shooter/Encoder", getEncoder());
+    SmartDashboard.putNumber("Shooter/Encover RPM", getEncVelocity());
+    SmartDashboard.putNumber("Shooter/Gain", getGain());
+    SmartDashboard.putNumber("Shooter/RPM", getRPM());
   }
 
-  public void putDashboard() {
-    switch (DashboardContainer.getInstance().getVerbosity()) {
-      case 5:
-        SmartDashboard.putNumber("Shooter/Encoder", getEncoder());
-        SmartDashboard.putNumber("Shooter/Native units per 100ms", getEncVelocity());
-      case 4:
-      case 3:
-        SmartDashboard.putNumber("Shooter/Gain", getGain());
-      case 2:
-        SmartDashboard.putNumber("Shooter/RPM", getRPM());
-      case 1:
-        break;
-      default:
-        break;
-    }
-  }
 }

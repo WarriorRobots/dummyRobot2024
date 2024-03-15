@@ -323,10 +323,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
      SmartDashboard.putString("Rotation2d", getRotation2d().toString());
      SmartDashboard.putNumber("Heading", getHeading());
      SmartDashboard.putNumberArray("Absolute Positions", getPositions());
-     SmartDashboard.putNumber("Front Left", frontLeft.getTurnDegrees()*18);
-     SmartDashboard.putNumber("Front Right", frontRight.getTurnDegrees()*18);
-     SmartDashboard.putNumber("Rear Left", rearLeft.getTurnDegrees()*18);
-     SmartDashboard.putNumber("Rear Right", rearRight.getTurnDegrees()*18);
+     SmartDashboard.putNumber("Front Left", (frontLeft.getTurnDegrees()*18)%360);
+     SmartDashboard.putNumber("Front Right", (frontRight.getTurnDegrees()*18)%360);
+     SmartDashboard.putNumber("Rear Left", (rearLeft.getTurnDegrees()*18)%360);
+     SmartDashboard.putNumber("Rear Right", (rearRight.getTurnDegrees()*18)%360);
     //SmartDashboard.putNumberArray("Absolute Encoder Positions", getAbsolutePositions());
     // Each state tells me the angle and speed of each module. (for testing/verification)
     SmartDashboard.putString("FrontLeft State", getSwerveStates()[0].toString());

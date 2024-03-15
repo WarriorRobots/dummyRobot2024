@@ -22,6 +22,14 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.DashboardContainer.TabsIndex;
+import frc.robot.commands.feed.FeedNote;
+import frc.robot.commands.intake.RunIntake;
+import frc.robot.commands.shooter.ShooterFeed;
+import frc.robot.commands.shooter.ShooterPrep;
+import frc.robot.commands.shooter.ShooterRPM;
+import frc.robot.subsystems.FeedSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 
 import java.time.Instant;
 
@@ -42,8 +50,17 @@ public class AutoContainer {
 
   private void init() {
 
+  // Command Initalization
+  // final ShooterPrep m_shooterPrep = new ShooterPrep(new FeedSubsystem());
+  // final ShooterFeed m_shooterFeed = new ShooterFeed(new ShooterSubsystem(), new FeedSubsystem());
+
+  // final RunIntake m_forwardIntake = new RunIntake(new IntakeSubsystem(), ()->Vars.INTAKE_FORWARD);
+  // final FeedNote m_feedNote = new FeedNote(new FeedSubsystem(), Vars.FEED_FORWARD);
+
   // Event marker configuration
   NamedCommands.registerCommand("test", new InstantCommand());
+  NamedCommands.registerCommand("shootNear", new SequentialCommandGroup(new ShooterPrep(new FeedSubsystem()), new ShooterFeed(new ShooterSubsystem(), new FeedSubsystem())));
+  NamedCommands.registerCommand("intake", new ParallelCommandGroup(new RunIntake(new IntakeSubsystem(), ()->Vars.INTAKE_FORWARD), new FeedNote(new FeedSubsystem(), Vars.FEED_FORWARD)));
 
   // Auto configuration
   chooser = new SendableChooser<Command>();
@@ -52,10 +69,12 @@ public class AutoContainer {
   chooser.addOption("None", new InstantCommand());
 
   // chooser.addOption("Test", AutoBuilder.buildAuto("New Auto"));
-  chooser.addOption("Test", new PathPlannerAuto("New Auto"));  
+  chooser.addOption("Test", new PathPlannerAuto("New Auto")); 
+  chooser.addOption("Backup", new PathPlannerAuto("Backup"));
+  chooser.addOption("Two Note Test", new PathPlannerAuto("Two Note Single Path")); 
 
   autoTab.add("Auto Selector", chooser).withWidget(BuiltInWidgets.kComboBoxChooser).withPosition(3, 0).withSize(2,1);
-  }
+}
 
   /**
    * Gets the AutoContainer instance.

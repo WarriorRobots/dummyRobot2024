@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Vars;
 import frc.robot.subsystems.ArmSubsystem;
 
-public class ArmDegree extends Command{
+public class ArmDegree extends Command {
   /** Creates a new armDegree. */
   double m_kP, m_armDegree;
   ArmSubsystem m_arm;
@@ -27,7 +27,6 @@ public class ArmDegree extends Command{
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    System.out.println("Starting Arm Degree");
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -39,12 +38,13 @@ public class ArmDegree extends Command{
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    System.out.println("Stopping Arm Degree");
+    m_arm.stop();
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    // return false;
     return Math.abs(m_arm.getArmAngle() - m_armDegree) < Vars.ARM_TOLERANCE;
   }
 }

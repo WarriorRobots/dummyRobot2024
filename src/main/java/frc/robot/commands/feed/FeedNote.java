@@ -7,19 +7,19 @@
 
 package frc.robot.commands.feed;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.FeedSubsystem;
 
-public class FeedNote extends CommandBase {
+public class FeedNote extends Command {
   FeedSubsystem m_feed;
-  double m_feed_percent;
+  double m_percent;
   /**
    * Run feed at some desired percent.
    */
-  public FeedNote(FeedSubsystem feed, double feed_percent) {
+  public FeedNote(FeedSubsystem feed, double percent) {
     m_feed = feed;
     addRequirements(m_feed);
-    m_feed_percent = feed_percent;
+    m_percent = percent;
   }
 
   // Called when the command is initially scheduled.
@@ -30,7 +30,9 @@ public class FeedNote extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_feed.feedAtPercent(m_feed_percent);
+    if(m_feed.containsNote()==false){
+    m_feed.feedAtPercent(m_percent);
+    }
   }
 
   // Called once the command ends or is interrupted.

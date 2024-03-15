@@ -155,7 +155,7 @@ public void putDashboard(){
 
       // SmartDashboard.putNumber("Shooter/FrontRPM", RobotContainer.m_ShooterSubsystem.getRPMFront());
       // SmartDashboard.putNumber("Shooter/BackRPM", RobotContainer.m_ShooterSubsystem.getRPMBack());
-      // SmartDashboard.putBoolean("Feed/ContainsBall", RobotContainer.m_FeedSubsystem.containsBall());
+      // SmartDashboard.putBoolean("Feed/ContainsNote", RobotContainer.m_FeedSubsystem.containsNote());
       break;
     case 0:
     default:

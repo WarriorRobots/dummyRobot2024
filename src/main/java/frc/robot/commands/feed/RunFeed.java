@@ -5,28 +5,22 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot.commands.shooter;
+package frc.robot.commands.feed;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Vars;
 import frc.robot.subsystems.FeedSubsystem;
-// import frc.robot.subsystems.FeedSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
 
-public class ShooterFeed extends Command {
-
-  ShooterSubsystem m_shooter;
+public class RunFeed extends Command {
   FeedSubsystem m_feed;
-  
+  double m_percent;
   /**
-   * A command that runs the shooter and then when the shooter is up to speed, feeds the shooter.
+   * Run feed at some desired percent.
    */
-  public ShooterFeed(ShooterSubsystem shooter, FeedSubsystem feed) {
-    m_shooter = shooter;
-    addRequirements(m_shooter);
+  public RunFeed(FeedSubsystem feed, double percent) {
     m_feed = feed;
     addRequirements(m_feed);
-}
+    m_percent = percent;
+  }
 
   // Called when the command is initially scheduled.
   @Override
@@ -36,27 +30,12 @@ public class ShooterFeed extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (Math.abs(m_shooter.getRPM()-m_shooter.getCommandedRPM()) < Vars.SHOOTER_TOLERANCE) {
-      // if the shooter is fast enough, feed it
-      m_feed.feedAtPercent(Vars.FEED_FORWARD);
-    } else {
-      // if the shooter is not fast enough...
-      if (!m_feed.containsNote()) {
-        // slowly feed it (so a note is ready to be shot)...
-        m_feed.feedAtPercent(Vars.FEED_FORWARD);
-      } else {
-        // until a note is ready to be shot
-        m_feed.stop();
-      }
-    }
-    // run/rev the shooter
-    m_shooter.setRPM(m_shooter.getCommandedRPM());
+    m_feed.feedAtPercent(m_percent);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_shooter.stop();
     m_feed.stop();
   }
 

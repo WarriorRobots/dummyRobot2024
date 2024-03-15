@@ -68,17 +68,17 @@ public class Vars {
   // Postive X is forward, Positive Y is to the left.
   public static final Translation2d[] swerve = new Translation2d[] {
     // Front Left
-    new Translation2d(Units.inchesToMeters(11.25), Units.inchesToMeters(11.25)),
+    new Translation2d(Units.inchesToMeters(10.25), Units.inchesToMeters(10.25)),
     // Front Right
-    new Translation2d(Units.inchesToMeters(11.25), Units.inchesToMeters(-11.25)),
+    new Translation2d(Units.inchesToMeters(10.25), Units.inchesToMeters(-10.25)),
     // Rear Left
-    new Translation2d(Units.inchesToMeters(-11.25), Units.inchesToMeters(11.25)),
+    new Translation2d(Units.inchesToMeters(-10.25), Units.inchesToMeters(10.25)),
     // Rear Right
-    new Translation2d(Units.inchesToMeters(-11.25), Units.inchesToMeters(-11.25)) 
+    new Translation2d(Units.inchesToMeters(-10.25), Units.inchesToMeters(-10.25)) 
     };
   //public static final double[] absoluteEncoderOffsets = {-37, -166, -48, 21};
   //public static final double[] absoluteEncoderOffsets = {-10.8, 3.3, -8.3, 6.2};
-  public static final double[] absoluteEncoderOffsets = {0, 0, 0, 0};
+  public static final double[] absoluteEncoderOffsets = {39, -144, 102, 108};
   //public static final Rotation2d angleOffset = Rotation2d.fromDegrees(327.48046875);
   //public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);
   // Swerve Drive Kinematics
@@ -90,29 +90,33 @@ public class Vars {
   // Arm 
   //TODO update arm values
   public static final boolean LEFT_ARM_REVERSED = false;
-  public static final boolean RIGHT_ARM_REVERSED = true;
+  public static final boolean RIGHT_ARM_REVERSED = false;
   public static final double ARM_KP = 0.3;
   public static final double ARM_KI = 0.000085;
   public static final double ARM_KD = 0.0000085;
   public static final double ARM_KF = 0;
   public static final double ARM_GEARING = 1 / 1; // input/output
   // Top Arm Angle Values
-  public static final double ARM_MAX_ANGLE = 110; // degrees
+  public static final double ARM_MAX_ANGLE = 100; // degrees
   public static final double ARM_MIN_ANGLE = 0; // degrees
-  public static final double ARM_TOLERANCE = 10; // Degrees
-
+  public static final double ARM_TOLERANCE = 6; // Degrees
+  public static final double ARM_FORWARD = .5; // percent
+  public static final double ARM_BACKWARD = -.5; //percent
   // Feed
-  public static final boolean FEED_REVERSED = false;
+  public static final boolean FEED_REVERSED = true;
+  public static final double FEED_FORWARD = 1;
+  public static final double FEED_BACKWARD = -0.5;
 
   // Intake
   public static final boolean INTAKE_REVERSED = false;
-  public static final double INTAKE_FORWARD = 0.5;
+  public static final double INTAKE_FORWARD = 1;
   public static final double INTAKE_BACKWARD = -0.5;
 
   // Shooter
-  public static final boolean SHOOTER_TOP_REVERSED = true;
-  public static final boolean SHOOTER_BOTTOM_REVERSED = false;
+  public static final boolean SHOOTER_TOP_REVERSED = false;
+  public static final boolean SHOOTER_BOTTOM_REVERSED = true;
   public static final double SHOOTER_KP = .15; 
-  public static final double SHOOTER_DEFAULT = 5500.0;
+  public static final double SHOOTER_DEFAULT = 6500.0;
+  public static final double SHOOTER_TOLERANCE = 500;
 
 }

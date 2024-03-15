@@ -4,21 +4,11 @@
 
 package frc.robot.subsystems;
 
-import javax.print.CancelablePrintJob;
-
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.SparkRelativeEncoder;
 
-import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -36,20 +26,26 @@ public class ArmSubsystem extends SubsystemBase {
   public ArmSubsystem() {
     // Configuration
     arm_left = new CANSparkMax(RobotMap.ID_ARM_LEFT, com.revrobotics.CANSparkLowLevel.MotorType.kBrushless);
+    arm_left.restoreFactoryDefaults();
     m_armEncoder = arm_left.getEncoder();
-    m_armController = arm_left.getPIDController();
+    // m_armController = arm_left.getPIDController();
 
     // turn motor config
     arm_left.setInverted(Vars.LEFT_ARM_REVERSED);
     arm_left.setCANTimeout(Constants.MS_TIMEOUT);
-    m_armController.setP(Vars.angleKP);
-    m_armController.setI(Vars.angleKI);
-    m_armController.setD(Vars.angleKD);
-    m_armController.setFF(Vars.angleKFF);
 
     arm_right = new CANSparkMax(RobotMap.ID_ARM_RIGHT, com.revrobotics.CANSparkLowLevel.MotorType.kBrushless);
+    arm_right.restoreFactoryDefaults();
     arm_right.follow(arm_left);
     arm_right.setInverted(Vars.RIGHT_ARM_REVERSED);
+    arm_right.setCANTimeout(Constants.MS_TIMEOUT);
+
+
+    // m_armController.setP(Vars.angleKP);
+    // m_armController.setI(Vars.angleKI);
+    // m_armController.setD(Vars.angleKD);
+    // m_armController.setFF(Vars.angleKFF);
+
 
     // encoder offsets
     resetEncoders();
@@ -67,7 +63,17 @@ public class ArmSubsystem extends SubsystemBase {
 
   // Sets the arm to the given unbounded angle (NO SAFETY)
   public void setArmAngleUnbounded(double degrees) {
-    arm_left.set(toNative(degrees));
+    if(getArmAngle() < degrees && Math.abs(degrees-getArmAngle()) > Vars.ARM_TOLERANCE){
+      arm_left.set(Vars.ARM_FORWARD);
+      //arm_right.set(.5);
+    }
+    else if(getArmAngle() > degrees && Math.abs(degrees-getArmAngle()) > Vars.ARM_TOLERANCE){
+      arm_left.set(Vars.ARM_BACKWARD);
+      //arm_right.set(-.5);
+    } else {
+    arm_left.set(0);
+    //arm_right.set(0);
+    }
   }
 
   public void setAngleUnbounded(double degrees) {
@@ -117,12 +123,13 @@ public class ArmSubsystem extends SubsystemBase {
 
   public void stop() {
     arm_left.stopMotor();
+    //arm_right.stopMotor();
   }
 
   @Override
   public void periodic() {
-  SmartDashboard.putNumber("Encoder value", getArmEnc());
-  SmartDashboard.putNumber("Arm Angle", getArmAngle());
+    SmartDashboard.putNumber("Encoder value", getArmEnc());
+    SmartDashboard.putNumber("Arm Angle", getArmAngle());
   }
 
 }

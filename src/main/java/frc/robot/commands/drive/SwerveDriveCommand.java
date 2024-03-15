@@ -37,9 +37,9 @@ public class SwerveDriveCommand extends Command {
   public void execute() {
      ChassisSpeeds chassisSpeeds;
      if(fieldOriented.getAsBoolean()){
-      chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xInput.getAsDouble() * 3,-yInput.getAsDouble() * 4,-rotInput.getAsDouble() * 6, drive.getRotation2d());
+      chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xInput.getAsDouble() * 2,-yInput.getAsDouble() * 8/3,-rotInput.getAsDouble() * 6, drive.getRotation2d());
     }else{
-      chassisSpeeds = new ChassisSpeeds(xInput.getAsDouble() * 3,-yInput.getAsDouble() * 4,-rotInput.getAsDouble() * 6);
+      chassisSpeeds = new ChassisSpeeds(xInput.getAsDouble() * 2,-yInput.getAsDouble() * 8/3,-rotInput.getAsDouble() * 6);
   }
     drive.setChassisSpeeds(chassisSpeeds);
   }

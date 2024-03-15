@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CANcoderConfigurator;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -16,6 +17,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.MotorFeedbackSensor;
@@ -63,6 +65,7 @@ public class SwerveModule {
     /* Drive motor initalization and config */
     m_driveMotor = new TalonFX(ID_DRIVE);
     m_driveMotor.setInverted(MOTOR_DRIVE_REVERSED);
+    m_driveMotor.setNeutralMode(NeutralModeValue.Brake);
     //m_driveMotor.setSensorPhase(ENCODER_DRIVE_REVERSED);
 
     var driveFeedback = new FeedbackConfigs();
@@ -90,7 +93,10 @@ public class SwerveModule {
     m_turnController.setI(Vars.angleKI);
     m_turnController.setD(Vars.angleKD);
     m_turnController.setFF(Vars.angleKFF);
-   
+    m_turnController.setPositionPIDWrappingEnabled(true);
+    m_turnController.setPositionPIDWrappingMaxInput(360);
+    m_turnController.setPositionPIDWrappingMinInput(0);
+
     /* Absolute Encoder initalization and config */
     m_absoluteEncoder = new CANcoder(ID_CANCODER);
     var cancoderConfig = new CANcoderConfiguration();
@@ -133,18 +139,20 @@ public class SwerveModule {
    * @param desiredState The desired state.
    * @param currentAngle The current module angle.
    */
-  public static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d currentAngle) {
-    double targetAngle = placeInAppropriate0To360Scope(currentAngle.getDegrees(), (desiredState.angle.getDegrees()/18));
+  public static SwerveModuleState optimize(SwerveModuleState desiredState, double currentAngle) {
+    //double targetAngle = placeInAppropriate0To360Scope(currentAngle, (desiredState.angle.getDegrees()/18));
+    double targetAngle = desiredState.angle.getDegrees()/18;
     double targetSpeed = desiredState.speedMetersPerSecond;
-    double delta = (targetAngle - currentAngle.getDegrees())*18;
-    if(Math.abs(delta) > 90) {
-      targetSpeed = -targetSpeed;
-      targetAngle = delta > 90 ? (targetAngle -= 10) : (targetAngle += 10);
-    }
-    //System.out.println("targetangle " + targetAngle);
+    double delta = (targetAngle - currentAngle)*18; //18 is for unit conversion
+    //System.out.println("targetangle " + targetAngle*18);
+    // if(Math.abs(delta) > 90) {
+    //   targetSpeed = -targetSpeed;
+    //   targetAngle = delta > 90 ? (targetAngle -= 180/18) : (targetAngle += 180/18); //18 is for unit conversion
+    // }
+    //System.out.println("targetangle " + targetAngle*18);
     //System.out.println("targetangle " + Rotation2d.fromDegrees(targetAngle));
-    // System.out.println("currentangle " + currentAngle.getDegrees());
-    //System.out.println("delta " + delta);
+    // System.out.println("currentangle " + currentAngle*18);
+    // System.out.println("delta " + delta);
     return new SwerveModuleState(targetSpeed, Rotation2d.fromDegrees(targetAngle));
   }
 
@@ -170,11 +178,11 @@ public class SwerveModule {
     while (newAngle > upperBound) {
       newAngle -= 360;
     }
-    if (newAngle - scopeReference > 180) {
-      newAngle -= 360;
-    } else if (newAngle - scopeReference < -180) {
-      newAngle += 360;
-    }
+    // if (newAngle - scopeReference > 180) {
+    //   newAngle -= 360;
+    // } else if (newAngle - scopeReference < -180) {
+    //   newAngle += 360;
+    // }
     return newAngle;
   }
   /**
@@ -183,7 +191,9 @@ public class SwerveModule {
    */
   public double getTurnDegrees() {
     //return m_absoluteEncoder.getPosition();
-    return m_turnEncoder.getPosition();
+    //return m_turnEncoder.getPosition();
+    System.out.println(m_turnEncoder.getPosition());
+    return (m_turnEncoder.getPosition() * 7 / Constants.CLICKS_PER_REV_INTEGRATED * (360.0*12))%360;
   }
   /**
    *  Angle of the Module as a Rotation2d
@@ -318,8 +328,11 @@ public class SwerveModule {
   public void setSwerveState(SwerveModuleState desiredState) {
     // Removed for testing purposes (used to deaband input)
     SwerveModuleState state;
-    state = optimize(desiredState, new Rotation2d(Units.degreesToRadians(getTurnDegrees()/18)));
+    state = SwerveModuleState.optimize(desiredState, new Rotation2d(Units.degreesToRadians(getTurnDegrees())));
+    //state = optimize(desiredState, getTurnDegrees()/18);
+    //state = optimize(desiredState, new Rotation2d(Units.degreesToRadians(getTurnDegrees()/18)));
     //state = optimize(desiredState, getSwerveState().angle);
+    //System.out.println("currentangle " + getTurnDegrees());
     setAngle(state);
     setSpeed(state);
   }
