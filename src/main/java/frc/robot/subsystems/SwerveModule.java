@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CANcoderConfigurator;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -13,6 +14,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -42,7 +44,7 @@ public class SwerveModule {
   //private final double m_absoluteEncoderOffset;
   // Motor Controller Declerations
   private TalonFX m_driveMotor;
-  private CANSparkMax m_turnMotor;
+  private TalonFX m_turnMotor;
   // CAN Coder
   private CANcoder m_absoluteEncoder;
   private RelativeEncoder m_turnEncoder;
@@ -73,29 +75,27 @@ public class SwerveModule {
     m_driveMotor.getConfigurator().apply(driveFeedback);
     //m_driveMotor.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, Constants.PRIMARY_PID,Constants.MS_TIMEOUT);
 
-    var slot0Configs = new Slot0Configs();
-    slot0Configs.kP = Vars.SWERVE_DRIVEMOTOR_KP; // PID value
-    m_driveMotor.getConfigurator().apply(slot0Configs);
+    var driveSlot0Configs = new Slot0Configs();
+    driveSlot0Configs.kP = Vars.SWERVE_DRIVEMOTOR_KP; // PID value
+    m_driveMotor.getConfigurator().apply(driveSlot0Configs);
     //m_driveMotor.config_kP(Constants.PRIMARY_PID, Vars.SWERVE_DRIVEMOTOR_KP);
 
 
     /* Turn motor and encoder inialization */
-    m_turnMotor = new CANSparkMax(ID_TURN, com.revrobotics.CANSparkLowLevel.MotorType.kBrushless);
-    m_turnEncoder = m_turnMotor.getEncoder();
-    m_turnController = m_turnMotor.getPIDController();
+    m_turnMotor = new TalonFX(ID_DRIVE);
+    m_turnMotor.setInverted(MOTOR_DRIVE_REVERSED);
+    m_turnMotor.setNeutralMode(NeutralModeValue.Brake);
+    
+    var turnFeedback = new FeedbackConfigs();
+    driveFeedback.FeedbackRemoteSensorID = Constants.PRIMARY_PID; // Sensor ID
+    m_driveMotor.getConfigurator().apply(turnFeedback);
+    
+    var turnSlot0Configs = new Slot0Configs();
+    turnSlot0Configs.kP = Vars.angleKP; // PID value
+    m_driveMotor.getConfigurator().apply(turnSlot0Configs);
 
     // txurn last angle
     lastAngle = getSwerveState().angle;
-    // turn motor config
-    m_turnMotor.setInverted(MOTOR_TURN_REVERSED);
-    m_turnMotor.setCANTimeout(Constants.MS_TIMEOUT);
-    m_turnController.setP(Vars.angleKP);
-    m_turnController.setI(Vars.angleKI);
-    m_turnController.setD(Vars.angleKD);
-    m_turnController.setFF(Vars.angleKFF);
-    m_turnController.setPositionPIDWrappingEnabled(true);
-    m_turnController.setPositionPIDWrappingMaxInput(360);
-    m_turnController.setPositionPIDWrappingMinInput(0);
 
     /* Absolute Encoder initalization and config */
     m_absoluteEncoder = new CANcoder(ID_CANCODER);
@@ -124,7 +124,8 @@ public class SwerveModule {
   // }
 
   public double getCanCoder() {
-    return m_turnEncoder.getPosition();
+    return m_absoluteEncoder.getAbsolutePosition().getValueAsDouble();
+    //return m_turnEncoder.getPosition();
     //return Rotation2d.fromDegrees(m_turnEncoder.getPosition());
   }
 
@@ -139,16 +140,15 @@ public class SwerveModule {
    * @param desiredState The desired state.
    * @param currentAngle The current module angle.
    */
-  public static SwerveModuleState optimize(SwerveModuleState desiredState, double currentAngle) {
-    //double targetAngle = placeInAppropriate0To360Scope(currentAngle, (desiredState.angle.getDegrees()/18));
-    double targetAngle = desiredState.angle.getDegrees()/18;
+  public static SwerveModuleState optimize(SwerveModuleState desiredState, Rotation2d currentAngle) {
+    double targetAngle = placeInAppropriate0To360Scope(currentAngle.getDegrees(), desiredState.angle.getDegrees());
     double targetSpeed = desiredState.speedMetersPerSecond;
-    double delta = (targetAngle - currentAngle)*18; //18 is for unit conversion
+    double delta = targetAngle - currentAngle.getDegrees(); //18 is for unit conversion
     //System.out.println("targetangle " + targetAngle*18);
-    // if(Math.abs(delta) > 90) {
-    //   targetSpeed = -targetSpeed;
-    //   targetAngle = delta > 90 ? (targetAngle -= 180/18) : (targetAngle += 180/18); //18 is for unit conversion
-    // }
+    if (Math.abs(delta) > 90) {
+      targetSpeed = -targetSpeed;
+      targetAngle = delta > 90 ? (targetAngle -= 180) : (targetAngle += 180);
+    }
     //System.out.println("targetangle " + targetAngle*18);
     //System.out.println("targetangle " + Rotation2d.fromDegrees(targetAngle));
     // System.out.println("currentangle " + currentAngle*18);
@@ -178,13 +178,14 @@ public class SwerveModule {
     while (newAngle > upperBound) {
       newAngle -= 360;
     }
-    // if (newAngle - scopeReference > 180) {
-    //   newAngle -= 360;
-    // } else if (newAngle - scopeReference < -180) {
-    //   newAngle += 360;
-    // }
+    if (newAngle - scopeReference > 180) {
+      newAngle -= 360;
+    } else if (newAngle - scopeReference < -180) {
+      newAngle += 360;
+    }
     return newAngle;
   }
+
   /**
    * Turn Motor Position in degrees
    * @return degrees
@@ -192,16 +193,17 @@ public class SwerveModule {
   public double getTurnDegrees() {
     //return m_absoluteEncoder.getPosition();
     //return m_turnEncoder.getPosition();
-    System.out.println(m_turnEncoder.getPosition());
-    return (m_turnEncoder.getPosition() * 7 / Constants.CLICKS_PER_REV_INTEGRATED * (360.0*12))%360;
+    // System.out.println(m_turnEncoder.getPosition());
+    // return (m_turnEncoder.getPosition() * 7 / Constants.CLICKS_PER_REV_INTEGRATED * (360.0*12))%360;
+    return toDegreesTurn(m_turnMotor.getPosition().getValueAsDouble());
   }
   /**
    *  Angle of the Module as a Rotation2d
    * @return Rotation2d of the Module.
    */
   public Rotation2d getAngle() {
-    return Rotation2d.fromDegrees(m_turnEncoder.getPosition()*18);
-    //return Rotation2d.fromDegrees(getTurnDegrees());
+    //return Rotation2d.fromDegrees(m_turnEncoder.getPosition()*18);
+    return Rotation2d.fromDegrees(getTurnDegrees());
   }
 
   /**
@@ -236,10 +238,10 @@ public class SwerveModule {
    * @return The inches/second of the turn encoder.
    */
   public double getTurnVelocity() {
-    return m_turnEncoder.getVelocity();
+    //return m_turnEncoder.getVelocity();
     //return m_absoluteEncoder.getVelocity();
-    // return (double) m_turnMotor.getSelectedSensorVelocity() * 10 / Constants.CLICKS_PER_REV_INTEGRATED
-    //     * Vars.SWERVE_TURNMOTOR_GEARING * Math.PI * Vars.WHEEL_DIAMETER;
+    return (double) m_turnMotor.getPosition().getValueAsDouble() * 10 / Constants.CLICKS_PER_REV_INTEGRATED
+        * Vars.SWERVE_TURNMOTOR_GEARING * Math.PI * Vars.WHEEL_DIAMETER;
   }
 
   /**
@@ -255,7 +257,7 @@ public class SwerveModule {
    */
   public void resetEncoders() {
     m_driveMotor.getConfigurator().setPosition(0);
-    m_turnEncoder.setPosition(0);
+    m_turnMotor.getConfigurator().setPosition(0);
     //m_absoluteEncoder.setPosition(0);
   }
 
@@ -267,9 +269,9 @@ public class SwerveModule {
    * rn current swerve state
    */
   public SwerveModuleState getSwerveState() {
-    return new SwerveModuleState(getDriveVelocity(), getAngle());
-    // return new SwerveModuleState(Units.inchesToMeters(getDriveVelocity()),
-    //     new Rotation2d(Units.degreesToRadians(getTurnDegrees())));
+    //return new SwerveModuleState(getDriveVelocity(), getAngle());
+    return new SwerveModuleState(Units.inchesToMeters(getDriveVelocity()),
+        new Rotation2d(Units.degreesToRadians(getTurnDegrees())));
   }
 
   /**
@@ -288,14 +290,14 @@ public class SwerveModule {
    * @param percent from -1 to 1.
    */
   public void setTurnPercent(double percent) {
-    m_turnMotor.set(percent);
+    m_turnMotor.setControl(new DutyCycleOut(percent));
   }
   /** 
    * Sets the turn motor a given angle in degrees. Closed Loop for testing purposes.
    * @param degrees 
    */
   public void setTurnDegrees(double degrees){
-    m_turnMotor.set(toNativeTurn(degrees));
+    m_turnMotor.setControl(new PositionVoltage(degrees));
   }
 
   /**
@@ -315,9 +317,10 @@ public class SwerveModule {
   public void setModuleToOffset() {
     //m_turnEncoder.setPosition(toNativeTurn( getAbsolutePosition() - m_absoluteEncoderOffset));
     //double absolutePosition = getCanCoder().getDegrees() - angleOffset.getDegrees();
-    double absolutePosition = getCanCoder() - m_angleOffset;
-    m_turnEncoder.setPosition(absolutePosition);
+    // double absolutePosition = getCanCoder() - m_angleOffset;
+    // m_turnEncoder.setPosition(absolutePosition);
     //m_absoluteEncoder.setPosition(toNativeTurn(getAbsolutePosition()-m_absoluteEncoderOffset));
+    m_turnMotor.getConfigurator().setPosition(toNativeTurn( getCanCoder() - m_angleOffset));
   }
 
   /**
@@ -327,12 +330,12 @@ public class SwerveModule {
    */
   public void setSwerveState(SwerveModuleState desiredState) {
     // Removed for testing purposes (used to deaband input)
-    SwerveModuleState state;
-    state = SwerveModuleState.optimize(desiredState, new Rotation2d(Units.degreesToRadians(getTurnDegrees())));
     //state = optimize(desiredState, getTurnDegrees()/18);
     //state = optimize(desiredState, new Rotation2d(Units.degreesToRadians(getTurnDegrees()/18)));
     //state = optimize(desiredState, getSwerveState().angle);
     //System.out.println("currentangle " + getTurnDegrees());
+    SwerveModuleState state;
+    state = optimize(desiredState, new Rotation2d(Units.degreesToRadians(getTurnDegrees())));
     setAngle(state);
     setSpeed(state);
   }
@@ -346,7 +349,7 @@ public class SwerveModule {
   public void setAngle(SwerveModuleState desiredState) {
     // Prevent rotating module if speed is less then 1%. Prevents Jittering.
     Rotation2d angle = (Math.abs(desiredState.speedMetersPerSecond) <= (Vars.SWERVE_MAX_VELOCITY * 0.01)) ? lastAngle : desiredState.angle;
-    m_turnController.setReference(angle.getDegrees(), ControlType.kPosition);
+    m_turnMotor.setControl(new PositionVoltage(toNativeTurn(angle.getDegrees())));
     lastAngle = angle;
   }
 
