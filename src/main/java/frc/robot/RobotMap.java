@@ -7,19 +7,19 @@ package frc.robot;
 /**  All CAN IDs reside here. */
 public class RobotMap {
   // Front Left Module IDs
-  public static final int ID_FRONTLEFT_TURN = 1;
+  public static final int ID_FRONTLEFT_TURN = 11;
   public static final int ID_FRONTLEFT_DRIVE = 1;
   public static final int ID_FRONTLEFT_CANCODER = 1;
   // Front Right Module IDs
-  public static final int ID_FRONTRIGHT_TURN = 2;
+  public static final int ID_FRONTRIGHT_TURN = 12;
   public static final int ID_FRONTRIGHT_DRIVE = 2;
   public static final int ID_FRONTRIGHT_CANCODER = 2;
   // REAR LEFT Module IDs
-  public static final int ID_REARLEFT_TURN = 3;
+  public static final int ID_REARLEFT_TURN = 13;
   public static final int ID_REARLEFT_DRIVE = 3;
   public static final int ID_REARLEFT_CANCODER = 3;
   // REAR RIGHT Module IDs
-  public static final int ID_REARRIGHT_TURN = 4;
+  public static final int ID_REARRIGHT_TURN = 14;
   public static final int ID_REARRIGHT_DRIVE = 4;
   public static final int ID_REARRIGHT_CANCODER = 4;
 

@@ -41,6 +41,7 @@ public class SwerveDriveCommand extends Command {
     }else{
       chassisSpeeds = new ChassisSpeeds(xInput.getAsDouble() * 2,-yInput.getAsDouble() * 8/3,-rotInput.getAsDouble() * 6);
   }
+    System.out.println("chassisSpeeds"+chassisSpeeds);
     drive.setChassisSpeeds(chassisSpeeds);
   }
 

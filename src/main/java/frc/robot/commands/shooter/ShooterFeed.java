@@ -38,12 +38,12 @@ public class ShooterFeed extends Command {
   public void execute() {
     if (Math.abs(m_shooter.getRPM()-m_shooter.getCommandedRPM()) < Vars.SHOOTER_TOLERANCE) {
       // if the shooter is fast enough, feed it
-      m_feed.feedAtPercent(Vars.FEED_FORWARD);
+      m_feed.feedAtPercent(Vars.FEED_SHOOT);
     } else {
       // if the shooter is not fast enough...
       if (!m_feed.containsNote()) {
         // slowly feed it (so a note is ready to be shot)...
-        m_feed.feedAtPercent(Vars.FEED_FORWARD);
+        m_feed.feedAtPercent(Vars.FEED_SHOOT);
       } else {
         // until a note is ready to be shot
         m_feed.stop();

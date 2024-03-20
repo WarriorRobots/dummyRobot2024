@@ -17,7 +17,7 @@ public class ShooterPrep extends Command {
 
   ShooterSubsystem m_shooter;
   FeedSubsystem m_feed;
-  double counter = 0;
+  private double counter = 0;
 
   /**
    * A command to clear the shooter of any notes (usually before shooting is ran.)
@@ -35,7 +35,7 @@ public class ShooterPrep extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_feed.feedAtPercent(Vars.FEED_BACKWARD);
+    //m_feed.feedAtPercent(Vars.FEED_BACKWARD);
     counter++;
   }
 
@@ -51,6 +51,6 @@ public class ShooterPrep extends Command {
   public boolean isFinished() {
     // make sure a note is not in the shooter
     //return !m_feed.containsNote();
-    return counter >= 10;
+    return counter >= 0;
   }
 }

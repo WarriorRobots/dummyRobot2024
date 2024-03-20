@@ -15,6 +15,7 @@ public class ShooterRPM extends Command {
    * Creates a new ShooterRPM.
    */
   ShooterSubsystem m_shooter;
+  private double counter = 0;
 
   public ShooterRPM(ShooterSubsystem shooter) {
     // Use addRequirements() here to declare subsystem dependencies.
@@ -31,18 +32,21 @@ public class ShooterRPM extends Command {
   @Override
   public void execute() {
     m_shooter.setRPM(m_shooter.getCommandedRPM());
+    counter++;
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     m_shooter.stop();
+    counter = 0;
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    //return false;
+    return counter >= 50;
     // return m_shooter.getRPM() >= 3500;
   }
 }

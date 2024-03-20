@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.DashboardContainer;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -66,6 +67,11 @@ public class ShooterSubsystem extends SubsystemBase {
     var slot0Configs = new Slot0Configs();
     slot0Configs.kP = Vars.SHOOTER_KP;
     shooter_top.getConfigurator().apply(slot0Configs);   
+
+    var currentLimitConfigs = new CurrentLimitsConfigs();
+    currentLimitConfigs.StatorCurrentLimitEnable = true;
+    currentLimitConfigs.StatorCurrentLimit = 30;
+    shooter_top.getConfigurator().apply(currentLimitConfigs);
     
     shooter_bottom = new TalonFX(RobotMap.ID_SHOOTER_BOTTOM);
     shooter_bottom.setControl(new Follower(shooter_top.getDeviceID(), true));

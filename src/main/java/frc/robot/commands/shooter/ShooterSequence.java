@@ -22,7 +22,7 @@ public class ShooterSequence extends SequentialCommandGroup {
    */
   public ShooterSequence(ShooterSubsystem shooter, FeedSubsystem feed) {
     super(
-      new ShooterPrep(feed),
+      new ShooterRPM(shooter),
       new ShooterFeed(shooter, feed)
     );
   }

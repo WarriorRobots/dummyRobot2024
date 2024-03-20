@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.DashboardContainer.TabsIndex;
+import frc.robot.commands.auto.ManualAuto;
 import frc.robot.commands.feed.FeedNote;
 import frc.robot.commands.intake.RunIntake;
 import frc.robot.commands.shooter.ShooterFeed;
@@ -67,11 +68,12 @@ public class AutoContainer {
   //chooser = AutoBuilder.buildAutoChooser();
 
   chooser.addOption("None", new InstantCommand());
+  chooser.addOption("Last Resort", new ManualAuto(RobotContainer.m_tank, RobotContainer.m_intake, RobotContainer.m_feed, RobotContainer.m_shooter));
 
   // chooser.addOption("Test", AutoBuilder.buildAuto("New Auto"));
-  chooser.addOption("Test", new PathPlannerAuto("New Auto")); 
-  chooser.addOption("Backup", new PathPlannerAuto("Backup"));
-  chooser.addOption("Two Note Test", new PathPlannerAuto("Two Note Single Path")); 
+  // chooser.addOption("Test", new PathPlannerAuto("New Auto")); 
+  // chooser.addOption("Backup", new PathPlannerAuto("Backup"));
+  // chooser.addOption("Two Note Test", new PathPlannerAuto("Two Note Single Path")); 
 
   autoTab.add("Auto Selector", chooser).withWidget(BuiltInWidgets.kComboBoxChooser).withPosition(3, 0).withSize(2,1);
 }

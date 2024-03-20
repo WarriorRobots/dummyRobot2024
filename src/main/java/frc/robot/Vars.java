@@ -78,7 +78,8 @@ public class Vars {
     };
   //public static final double[] absoluteEncoderOffsets = {-37, -166, -48, 21};
   //public static final double[] absoluteEncoderOffsets = {-10.8, 3.3, -8.3, 6.2};
-  public static final double[] absoluteEncoderOffsets = {39, -144, 102, 108};
+  // public static final double[] absoluteEncoderOffsets = {39, -144, 102, 108};
+  public static final double[] absoluteEncoderOffsets = {-160, -12, -1, -277};
   //public static final Rotation2d angleOffset = Rotation2d.fromDegrees(327.48046875);
   //public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);
   // Swerve Drive Kinematics
@@ -106,6 +107,7 @@ public class Vars {
   public static final boolean FEED_REVERSED = true;
   public static final double FEED_FORWARD = 1;
   public static final double FEED_BACKWARD = -0.5;
+  public static final double FEED_SHOOT = .75;
 
   // Intake
   public static final boolean INTAKE_REVERSED = false;

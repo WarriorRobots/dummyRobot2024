@@ -9,6 +9,7 @@ import frc.robot.commands.arm.ArmDegree;
 import frc.robot.commands.drive.ModuleToDegree;
 import frc.robot.commands.drive.SwerveDriveCommand;
 import frc.robot.commands.drive.SwerveDrivePercent;
+import frc.robot.commands.drive.TankDrive;
 import frc.robot.commands.feed.FeedNote;
 import frc.robot.commands.feed.RunFeed;
 import frc.robot.commands.intake.RunIntake;
@@ -21,6 +22,7 @@ import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeedSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.TankSubsystem;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleTopic;
 import edu.wpi.first.networktables.NetworkTable;
@@ -47,17 +49,19 @@ public class RobotContainer {
   public static final IntakeSubsystem m_intake = new IntakeSubsystem();
   public static final FeedSubsystem m_feed = new FeedSubsystem();
   public static final ShooterSubsystem m_shooter = new ShooterSubsystem();
+  public static final TankSubsystem m_tank = new TankSubsystem();
 
   // Drive Command
   // In terms of the robot, the cartesian plane is rotated 90 degrees, i.e X is forward (Y input for controller), Y is horizontal (X input for controller)
-  private final SwerveDriveCommand swerveDrive = new SwerveDriveCommand(m_drive, ()->IO.getXBox1LeftX(), ()->IO.getXBox1LeftY(), ()->IO.getXBox1RightX(), ()->DrivetrainSubsystem.FOC);
+  //private final SwerveDriveCommand swerveDrive = new SwerveDriveCommand(m_drive, ()->IO.getXBox1LeftX(), ()->IO.getXBox1LeftY(), ()->IO.getXBox1RightX(), ()->false);
+  //private final TankDrive tankDrive = new TankDrive(m_tank, ()->IO.getXBox1LeftY(), ()->IO.getXBox1RightY());
   //private final SwerveDrivePercent swerveTurn = new SwerveDrivePercent(m_drive, ()->IO.getXBox1RightX(), ()->IO.getXBox1LeftX());
   private final InstantCommand toggleFOC = new InstantCommand(()-> DrivetrainSubsystem.FOC = DrivetrainSubsystem.FOC ? DrivetrainSubsystem.FOC = false : true );
   private final InstantCommand toggleTurboOn = new InstantCommand(()-> Vars.SWERVE_MAX_VELOCITY = .5);
   private final InstantCommand toggleTurboOff = new InstantCommand(()-> Vars.SWERVE_MAX_VELOCITY = 12);
-  private final InstantCommand resetGyro = new InstantCommand(()-> m_drive.resetHeading());
-  private final InstantCommand resetEncoders = new InstantCommand(()->m_drive.resetEncoders());
-  private final ModuleToDegree moveToDegree = new ModuleToDegree(m_drive);
+  // private final InstantCommand resetGyro = new InstantCommand(()-> m_drive.resetHeading());
+  // private final InstantCommand resetEncoders = new InstantCommand(()->m_drive.resetEncoders());
+  // private final ModuleToDegree moveToDegree = new ModuleToDegree(m_drive);
 
   // Arm Commands
   //TODO update values
@@ -93,7 +97,7 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
-    CommandScheduler.getInstance().setDefaultCommand(m_drive,swerveDrive);
+    //CommandScheduler.getInstance().setDefaultCommand(m_tank, tankDrive);
   }
 
   /**
@@ -109,8 +113,9 @@ public class RobotContainer {
     // IO.xbox1_RB.whileTrue(toggleTurboOn);
     // IO.xbox1_RB.whileFalse(toggleTurboOff);
 
+    //
     IO.xbox1_Y.toggleOnTrue(toggleFOC);
-    IO.xbox1_X.onTrue(resetGyro);
+    // IO.xbox1_X.onTrue(resetGyro);
 
     IO.xbox1_LB.whileTrue(m_pickupForward);
     IO.xbox1_Down.whileTrue(m_pickupReverse);

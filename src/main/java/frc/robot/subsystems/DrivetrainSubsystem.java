@@ -69,7 +69,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     //resetHeading();
     //resetEncoders();
     Timer.delay(1);
-    setModulesToAbsolute();
+    //setModulesToAbsolute();
 
     AutoBuilder.configureHolonomic(
       //'this::method' is the same thing as '()->method()' but more concise (I think)
@@ -115,14 +115,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
   //  * @param drivePercent
   //  */
   public void setDrivePercent(double turnPercent, double drivePercent){
-    frontLeft.setDrivePercent(drivePercent);
-    frontLeft.setTurnPercent(turnPercent);
-    frontRight.setDrivePercent(drivePercent);
-    frontRight.setTurnPercent(turnPercent);
-    rearLeft.setDrivePercent(drivePercent);
-    rearLeft.setTurnPercent(turnPercent);
-    rearRight.setDrivePercent(drivePercent);
-    rearRight.setTurnPercent(turnPercent);
+    // frontLeft.setDrivePercent(drivePercent);
+    // frontLeft.setTurnPercent(turnPercent);
+    // frontRight.setDrivePercent(drivePercent);
+    // frontRight.setTurnPercent(turnPercent);
+    // rearLeft.setDrivePercent(drivePercent);
+    // rearLeft.setTurnPercent(turnPercent);
+    // rearRight.setDrivePercent(drivePercent);
+    // rearRight.setTurnPercent(turnPercent);
   }
 
   /**
@@ -130,11 +130,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @param state for the modules to be in.
    */
   public void setModuleStates(SwerveModuleState[] state){
-    SwerveDriveKinematics.desaturateWheelSpeeds(state,Vars.SWERVE_MAX_VELOCITY);
-    frontLeft.setSwerveState(state[0]);
-    frontRight.setSwerveState(state[1]);
-    rearLeft.setSwerveState(state[2]);
-    rearRight.setSwerveState(state[3]);
+    // SwerveDriveKinematics.desaturateWheelSpeeds(state,Vars.SWERVE_MAX_VELOCITY);
+    // frontLeft.setSwerveState(state[0]);
+    // frontRight.setSwerveState(state[1]);
+    // rearLeft.setSwerveState(state[2]);
+    // rearRight.setSwerveState(state[3]);
   }
 
   /**
@@ -152,6 +152,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     //System.out.println("RL current: " + rearLeft.getTurnDegrees() + "RL Goal" + state[2].angle.getDegrees());
     rearRight.setSwerveState(state[3]);
     //System.out.println("RR current: " + rearRight.getTurnDegrees() + "RR Goal" + state[3].angle.getDegrees());  
+
   }
 
   /**
@@ -159,10 +160,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @param angles
    */
   public void setModulesToAbsolute(){
-    frontLeft.setModuleToOffset();
-    frontRight.setModuleToOffset();
-    rearLeft.setModuleToOffset();
-    rearRight.setModuleToOffset();
+    // frontLeft.setModuleToOffset();
+    // frontRight.setModuleToOffset();
+    // rearLeft.setModuleToOffset();
+    // rearRight.setModuleToOffset();
   }
 
   /**
@@ -323,10 +324,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
      SmartDashboard.putString("Rotation2d", getRotation2d().toString());
      SmartDashboard.putNumber("Heading", getHeading());
      SmartDashboard.putNumberArray("Absolute Positions", getPositions());
-     SmartDashboard.putNumber("Front Left", (frontLeft.getTurnDegrees()*18)%360);
-     SmartDashboard.putNumber("Front Right", (frontRight.getTurnDegrees()*18)%360);
-     SmartDashboard.putNumber("Rear Left", (rearLeft.getTurnDegrees()*18)%360);
-     SmartDashboard.putNumber("Rear Right", (rearRight.getTurnDegrees()*18)%360);
+     SmartDashboard.putNumber("Front Left", frontLeft.getTurnDegrees());
+     SmartDashboard.putNumber("Front Right", frontRight.getTurnDegrees());
+     SmartDashboard.putNumber("Rear Left", rearLeft.getTurnDegrees());
+     SmartDashboard.putNumber("Rear Right", rearRight.getTurnDegrees());
     //SmartDashboard.putNumberArray("Absolute Encoder Positions", getAbsolutePositions());
     // Each state tells me the angle and speed of each module. (for testing/verification)
     SmartDashboard.putString("FrontLeft State", getSwerveStates()[0].toString());
