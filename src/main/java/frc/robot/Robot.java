@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.DashboardContainer.TabsIndex;
 import frc.robot.KnightsSwerve.DriveManipulation;
+import frc.robot.subsystems.DrivetrainSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -21,11 +22,12 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
-  private XboxController controller =  new XboxController(0);
+  //private XboxController controller =  new XboxController(0);
 
+  public DriveManipulation drive = new DriveManipulation(/*controller*/);
+  //public static final DrivetrainSubsystem m_drive = new DrivetrainSubsystem();
+  public static final boolean precisionMode = false;
   public static double gyroOffset = 0;
-  public DriveManipulation drive = new DriveManipulation(controller);
-  boolean precisionMode = false;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -92,10 +94,12 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    drive.setNewCenterState();
+    // m_drive.setNewCenterState(IO.m_xbox1.getLeftX(), -IO.m_xbox1.getLeftY(), -IO.m_xbox1.getRightX());
+    // m_drive.setStates(precisionMode);
+    drive.setNewCenterState(IO.m_xbox1.getLeftX(), -IO.m_xbox1.getLeftY(), -IO.m_xbox1.getRightX());
     drive.runToState(precisionMode);
 
-    if (controller.getYButton()) {
+    if (IO.m_xbox1.getYButton()) {
       gyroOffset = drive.navx.getAngle() * (Math.PI / 180);
     }
   }

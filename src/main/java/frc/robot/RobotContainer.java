@@ -6,9 +6,9 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.arm.ArmDegree;
-import frc.robot.commands.drive.ModuleToDegree;
-import frc.robot.commands.drive.SwerveDriveCommand;
-import frc.robot.commands.drive.SwerveDrivePercent;
+// import frc.robot.commands.drive.ModuleToDegree;
+// import frc.robot.commands.drive.SwerveDriveCommand;
+// import frc.robot.commands.drive.SwerveDrivePercent;
 import frc.robot.commands.drive.TankDrive;
 import frc.robot.commands.feed.FeedNote;
 import frc.robot.commands.feed.RunFeed;
@@ -18,7 +18,7 @@ import frc.robot.commands.shooter.ShooterPrep;
 import frc.robot.commands.shooter.ShooterRPM;
 import frc.robot.commands.shooter.ShooterSequence;
 import frc.robot.subsystems.ArmSubsystem;
-import frc.robot.subsystems.DrivetrainSubsystem;
+//import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeedSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -44,7 +44,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  public static final DrivetrainSubsystem m_drive = new DrivetrainSubsystem();
+  //public static final DrivetrainSubsystem m_drive = new DrivetrainSubsystem();
   public static final ArmSubsystem m_arm = new ArmSubsystem();
   public static final IntakeSubsystem m_intake = new IntakeSubsystem();
   public static final FeedSubsystem m_feed = new FeedSubsystem();
@@ -56,7 +56,7 @@ public class RobotContainer {
   //private final SwerveDriveCommand swerveDrive = new SwerveDriveCommand(m_drive, ()->IO.getXBox1LeftX(), ()->IO.getXBox1LeftY(), ()->IO.getXBox1RightX(), ()->false);
   //private final TankDrive tankDrive = new TankDrive(m_tank, ()->IO.getXBox1LeftY(), ()->IO.getXBox1RightY());
   //private final SwerveDrivePercent swerveTurn = new SwerveDrivePercent(m_drive, ()->IO.getXBox1RightX(), ()->IO.getXBox1LeftX());
-  private final InstantCommand toggleFOC = new InstantCommand(()-> DrivetrainSubsystem.FOC = DrivetrainSubsystem.FOC ? DrivetrainSubsystem.FOC = false : true );
+  //private final InstantCommand toggleFOC = new InstantCommand(()-> DrivetrainSubsystem.FOC = DrivetrainSubsystem.FOC ? DrivetrainSubsystem.FOC = false : true );
   private final InstantCommand toggleTurboOn = new InstantCommand(()-> Vars.SWERVE_MAX_VELOCITY = .5);
   private final InstantCommand toggleTurboOff = new InstantCommand(()-> Vars.SWERVE_MAX_VELOCITY = 12);
   // private final InstantCommand resetGyro = new InstantCommand(()-> m_drive.resetHeading());
@@ -114,7 +114,7 @@ public class RobotContainer {
     // IO.xbox1_RB.whileFalse(toggleTurboOff);
 
     //
-    IO.xbox1_Y.toggleOnTrue(toggleFOC);
+    //IO.xbox1_Y.toggleOnTrue(toggleFOC);
     // IO.xbox1_X.onTrue(resetGyro);
 
     IO.xbox1_LB.whileTrue(m_pickupForward);

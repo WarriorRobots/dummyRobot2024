@@ -4,30 +4,45 @@
 
 package frc.robot.commands.auto;
 
+import java.util.function.DoubleSupplier;
+
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Vars;
-import frc.robot.commands.drive.ChassisSwerve;
+import frc.robot.KnightsSwerve.DriveManipulation;
+import frc.robot.commands.drive.SwerveDriveAuto;
+import frc.robot.commands.drive.TankDrive;
+import frc.robot.commands.feed.FeedNote;
+import frc.robot.commands.feed.RunFeed;
 import frc.robot.commands.intake.RunIntake;
-import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.commands.shooter.ShooterFeed;
+import frc.robot.commands.shooter.ShooterPrep;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import frc.robot.subsystems.FeedSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.TankSubsystem;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class AutoMobility extends SequentialCommandGroup {
-  /** Creates a new autoStraight. */
-  
-  public AutoMobility(DrivetrainSubsystem drive, ArmSubsystem arm, IntakeSubsystem intake) {
-    // Add your commands in the addCommands() call, e.g.
-    // addCommands(new FooCommand(), new BarCommand());
+  /** Creates a new ManualAuto. */
+  public AutoMobility(DriveManipulation drive, IntakeSubsystem intake, FeedSubsystem feed, ShooterSubsystem shooter) {
+    // Use addRequirements() here to declare subsystem dependencies.
+
     addCommands(
-      new ParallelDeadlineGroup(new WaitCommand(.25), new ChassisSwerve(()->-.4, ()->0, drive)),
-      new ParallelDeadlineGroup(new WaitCommand(8), new ChassisSwerve(()->.4, ()->0, drive))
+      new ParallelDeadlineGroup(new WaitCommand(2), new ShooterFeed(shooter, feed)),
+      new ParallelDeadlineGroup(new WaitCommand(3), new ParallelCommandGroup(
+        new SwerveDriveAuto(drive, .2, -.2, 0)
+        )
+      ),
+      new ParallelDeadlineGroup(new WaitCommand(.5), new ParallelCommandGroup(
+        new SwerveDriveAuto(drive, .2, -.2, 0),
+        new ParallelCommandGroup(new RunIntake(intake, ()->.75), new FeedNote(feed, .75))
+        )
+      )
     );
+
   }
 }

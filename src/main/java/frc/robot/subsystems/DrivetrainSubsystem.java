@@ -1,340 +1,309 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.kauailabs.navx.frc.AHRS;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import com.revrobotics.CANSparkFlex;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.RobotMap;
 import frc.robot.Vars;
+import frc.robot.KnightsSwerve.TurnMotor;
 
-public class DrivetrainSubsystem extends SubsystemBase {
-  // Swerve Module Declaration
-  private final SwerveModule frontLeft,frontRight,rearLeft, rearRight;
-  // Swerve Drive (entire drivetrain) odometry
-  private final SwerveDriveOdometry odometry;
-  // *Testing Pose Estimator that uses camera as a input similar to regular Odometry (it is public in order for use in camera subsystem)
-  public static SwerveDrivePoseEstimator poseEstimator;
-  // Gyro
-  private final AHRS navx;
-  private final Field2d field;
-  //Field Oriented Control (defaulted as true)
-  public static boolean FOC = true;
+public class DrivetrainSubsystem {
+    private double[] swerveModuleAngles = {0, 0, 0, 0}; // in radians
+    private double[] swerveModuleSpeeds = {0, 0, 0, 0}; // in meters per second
 
-  /** Creates a new DrivetrainSubsystem. */
-  public DrivetrainSubsystem() {
-    // All Swerve Modules (DriveID, TURNID, DRIVEMOTORPHASE,TURNMOTORPHASE,DRIVEENCODERPHASE, TURN ENCODERPHASE) 
-    frontLeft = new SwerveModule(RobotMap.ID_FRONTLEFT_DRIVE, RobotMap.ID_FRONTLEFT_TURN,
-    Vars.FRONTLEFT_DRIVE_MOTOR_REVERSED, Vars.FRONTLEFT_TURN_MOTOR_REVERSED, Vars.FRONTLEFT_DRIVE_ENCODER_REVERSED, Vars.FRONTLEFT_TURN_ENCODER_REVERSED,
-    RobotMap.ID_FRONTLEFT_CANCODER, Vars.FRONTLEFT_CANCODER_REVERSED, Vars.absoluteEncoderOffsets[0]);
+    boolean brakeRotation = false;
 
-    frontRight = new SwerveModule(RobotMap.ID_FRONTRIGHT_DRIVE, RobotMap.ID_FRONTRIGHT_TURN, 
-    Vars.FRONTRIGHT_DRIVE_MOTOR_REVERSED, Vars.FRONTRIGHT_TURN_MOTOR_REVERSED, Vars.FRONTRIGHT_DRIVE_ENCODER_REVERSED, Vars.FRONTRIGHT_TURN_ENCODER_REVERSED,
-    RobotMap.ID_FRONTRIGHT_CANCODER, Vars.FRONTRIGHT_CANCODER_REVERSED, Vars.absoluteEncoderOffsets[1]);
+    private double previousState;
+    private double setState;
+    private double errorInState;
+    private double[] pidStuff = {.3, 0, .1};
 
-    rearLeft = new SwerveModule(RobotMap.ID_REARLEFT_DRIVE, RobotMap.ID_REARLEFT_TURN,
-    Vars.REARLEFT_DRIVE_MOTOR_REVERSED,   Vars.REARLEFT_TURN_MOTOR_REVERSED, Vars.REARLEFT_DRIVE_ENCODER_REVERSED, Vars.REARLEFT_TURN_ENCODER_REVERSED,
-    RobotMap.ID_REARLEFT_CANCODER, Vars.REARLEFT_CANCODER_REVERSED, Vars.absoluteEncoderOffsets[2]);
+    public static double[] swerveAngleOffset = {
+        -230 * (Math.PI /180),
+        25 * (Math.PI /180),
+        5 * (Math.PI /180),
+        200 * (Math.PI /180),
+    };
 
-    rearRight = new SwerveModule(RobotMap.ID_REARRIGHT_DRIVE, RobotMap.ID_REARRIGHT_TURN, 
-    Vars.REARRIGHT_DRIVE_MOTOR_REVERSED, Vars.REARRIGHT_TURN_MOTOR_REVERSED, Vars.REARRIGHT_DRIVE_ENCODER_REVERSED, Vars.REARRIGHT_TURN_ENCODER_REVERSED,
-    RobotMap.ID_REARRIGHT_CANCODER,  Vars.REARRIGHT_CANCODER_REVERSED, Vars.absoluteEncoderOffsets[3]);
+    private double x;
+    private double y;
+    private double rotation;
 
-    // no try/catch on navx because if there is no navx, the auto will break regardless
-    navx = new AHRS(I2C.Port.kMXP);
-    odometry = new SwerveDriveOdometry(Vars.KINEMATICS, Rotation2d.fromDegrees(getAngle()), getSwervePositions());
-    poseEstimator = new SwerveDrivePoseEstimator(Vars.KINEMATICS, getRotation2d(), getSwervePositions(), new Pose2d());
-    // shuffleboard field widget to visualize auto routines (publishes a image of the field on smartdashboard)
-    field = new Field2d();
-    SmartDashboard.putData("field",field);
-    //resetHeading();
-    //resetEncoders();
-    Timer.delay(1);
-    //setModulesToAbsolute();
+    public AHRS navx;
 
-    AutoBuilder.configureHolonomic(
-      //'this::method' is the same thing as '()->method()' but more concise (I think)
-      this::getPose, 
-      this::resetPose, 
-      this::getSpeeds, 
-      this::driveRobotRelative, 
-      new HolonomicPathFollowerConfig(
-        new PIDConstants(1, 0.0, 0.0),
-        new PIDConstants(1, 0.0, 0.0),
-        .25, 
-        0.4, 
-        new ReplanningConfig() // Default path replanning config
-      ),
-      () -> {
-      // Boolean supplier that controls when the path will be mirrored for the red alliance
-      // This will flip the path being followed to the red side of the field.
-      // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-      var alliance = DriverStation.getAlliance();
-      if (alliance.isPresent()) {
-        return alliance.get() == DriverStation.Alliance.Red;
-      }
-      return false;
-      },
-      this
-      );
+    private final TalonFX frontLeftDrive, frontRightDrive, rearLeftDrive, rearRightDrive;
+    private final TalonFX frontLeftTurn, frontRightTurn, rearLeftTurn, rearRightTurn;
+    private final CANcoder frontLeftTurnEncoder, frontRightTurnEncoder, rearLeftTurnEncoder, rearRightTurnEncoder;
 
-  }
-  /**
-   * Sets the module to a specific degree (for testing PID)
-   * @param degrees
-   */
-  public void setModuleToDegree(double degrees){
-    frontLeft.setTurnDegrees(degrees);
-    frontRight.setTurnDegrees(degrees);
-    rearLeft.setTurnDegrees(degrees);
-    rearRight.setTurnDegrees(degrees);
-  }
+    public DrivetrainSubsystem() {
 
-  // /**
-  //  * Sets a turn and drive percent to each module.
-  //  * @param turnPercent
-  //  * @param drivePercent
-  //  */
-  public void setDrivePercent(double turnPercent, double drivePercent){
-    // frontLeft.setDrivePercent(drivePercent);
-    // frontLeft.setTurnPercent(turnPercent);
-    // frontRight.setDrivePercent(drivePercent);
-    // frontRight.setTurnPercent(turnPercent);
-    // rearLeft.setDrivePercent(drivePercent);
-    // rearLeft.setTurnPercent(turnPercent);
-    // rearRight.setDrivePercent(drivePercent);
-    // rearRight.setTurnPercent(turnPercent);
-  }
+    frontLeftDrive  = new TalonFX(RobotMap.ID_FRONTLEFT_DRIVE);
+    frontRightDrive = new TalonFX(RobotMap.ID_FRONTRIGHT_DRIVE);
+    rearLeftDrive   = new TalonFX(RobotMap.ID_REARLEFT_DRIVE);
+    rearRightDrive  = new TalonFX(RobotMap.ID_REARRIGHT_DRIVE);
 
-  /**
-   * Sets each module given a desired state.
-   * @param state for the modules to be in.
-   */
-  public void setModuleStates(SwerveModuleState[] state){
-    // SwerveDriveKinematics.desaturateWheelSpeeds(state,Vars.SWERVE_MAX_VELOCITY);
-    // frontLeft.setSwerveState(state[0]);
-    // frontRight.setSwerveState(state[1]);
-    // rearLeft.setSwerveState(state[2]);
-    // rearRight.setSwerveState(state[3]);
-  }
+    frontLeftTurn = new TalonFX(RobotMap.ID_FRONTLEFT_TURN);
+    frontRightTurn = new TalonFX(RobotMap.ID_FRONTRIGHT_TURN);
+    rearLeftTurn = new TalonFX(RobotMap.ID_REARLEFT_TURN);
+    rearRightTurn = new TalonFX(RobotMap.ID_REARRIGHT_TURN);
 
-  /**
-   * Sets the state of each module given a chassisspeeds. 
-   * @param chassisSpeeds desired chassisSpeeds
-   */
-  public void setChassisSpeeds(ChassisSpeeds chassisSpeeds){
-    SwerveModuleState[] state = Vars.KINEMATICS.toSwerveModuleStates(chassisSpeeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(state,Vars.SWERVE_MAX_VELOCITY);
-    frontLeft.setSwerveState(state[0]);
-    //System.out.println("FL current: " + frontLeft.getTurnDegrees() + "FL Goal" + state[0].angle.getDegrees());
-    frontRight.setSwerveState(state[1]);
-    //System.out.println("FR current: " + frontRight.getTurnDegrees() + "FR Goal" + state[1].angle.getDegrees());
-    rearLeft.setSwerveState(state[2]);
-    //System.out.println("RL current: " + rearLeft.getTurnDegrees() + "RL Goal" + state[2].angle.getDegrees());
-    rearRight.setSwerveState(state[3]);
-    //System.out.println("RR current: " + rearRight.getTurnDegrees() + "RR Goal" + state[3].angle.getDegrees());  
+    frontLeftTurnEncoder = new CANcoder(RobotMap.ID_FRONTLEFT_CANCODER);
+    frontRightTurnEncoder = new CANcoder(RobotMap.ID_FRONTRIGHT_CANCODER);
+    rearLeftTurnEncoder = new CANcoder(RobotMap.ID_REARLEFT_CANCODER);
+    rearRightTurnEncoder = new CANcoder(RobotMap.ID_REARRIGHT_CANCODER);
 
-  }
-
-  /**
-   * Reset the turn Motors to absolute angle.
-   * @param angles
-   */
-  public void setModulesToAbsolute(){
-    // frontLeft.setModuleToOffset();
-    // frontRight.setModuleToOffset();
-    // rearLeft.setModuleToOffset();
-    // rearRight.setModuleToOffset();
-  }
-
-  /**
-   * Retrives the positions of each module state as an array. Order Matters! Should be the same as you set the module states.
-   * @return The Positions of each module in an array.
-   */
-  public SwerveModulePosition[] getSwervePositions(){
-   return new SwerveModulePosition[] {frontLeft.getSwerveModulePosition(),frontRight.getSwerveModulePosition(),rearLeft.getSwerveModulePosition(),rearRight.getSwerveModulePosition()};
-  }
-
-  /**
-   *  SwerveState array of all modules
-   * @return velocity and angle of module.
-   */
-  public SwerveModuleState[] getSwerveStates(){
-    return new SwerveModuleState[] {frontLeft.getSwerveState(), frontRight.getSwerveState(),rearLeft.getSwerveState(), rearRight.getSwerveState()};
-  }
-
-  /**
-   * Retrives the absolute position of each module.
-   * @return an array with each absolute position if each module.
-   */
-  // public double[] getAbsolutePositions(){
-  //   return new double[] {frontLeft.getAbsolutePosition(), frontRight.getAbsolutePosition(), rearLeft.getAbsolutePosition(), rearRight.getAbsolutePosition()};
-  // }
-
-  /**
-   * Retrives the absolute position of each module.
-   * @return an array with each absolute position if each module.
-   */
-  public double[] getPositions(){
-    return new double[] {frontLeft.getTurnDegrees(), frontRight.getTurnDegrees(), rearLeft.getTurnDegrees(), rearRight.getTurnDegrees()};
-  }
- 
-  /**
-   *  Average Distance Travelled in inches.
-   * @return the average distance of the robot in inches.
-   */
-  public double getDistance(){
-    return ((frontLeft.getDrivePosition() + frontRight.getDrivePosition() + rearLeft.getDrivePosition() + rearRight.getDrivePosition()) / 4);
-  }
-
-  /**
-   * Average Velocity of the robot in inches/second. 
-   * @return
-   */
-  public double getVelocity(){
-    return ((frontLeft.getDriveVelocity() + frontRight.getDriveVelocity() + rearLeft.getDriveVelocity() + rearRight.getDriveVelocity()) / 4);
-  }
-
-  /**
-   * Returns the degree value of the Rotation2d.
-   * @return The degree value of the Rotation2d. (Angle within (-180, 180)
-   */
-  public double getHeading(){
-    return navx.getRotation2d().getDegrees();
-  }
-
-  /**
-   * Retrieves the position of the robot on the field.
-   * @return The pose of the robot (x and y are in meters).
-   */
-  public Pose2d getPose(){
-    return odometry.getPoseMeters();
-  }
-
-  /**
-   * Retrives the Rotation 2d of the robot in degrees.
-   * @return Rotation2d of the robot.
-   */
-  public Rotation2d getRotation2d(){
-      return navx.getRotation2d();
-  }
-
-  public double getRoll(){
-    return navx.getRoll();
-  }
-
-  /**
-   * Retrieves the angle of the navx in degrees. Angle is continuous i.e will go past 360 degrees.
-   * @return angle of the robot.
-   */
-  public double getAngle(){
-    return navx.getAngle();
-  }
-  
-  public ChassisSpeeds getSpeeds(){
-    return Vars.KINEMATICS.toChassisSpeeds(getSwerveStates());
-  }
-
-  public void driveFieldRelative(ChassisSpeeds fieldRelativeSpeeds) {
-    driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelativeSpeeds, getPose().getRotation()));
-  }
-
-  public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
-    ChassisSpeeds targetSpeeds = ChassisSpeeds.discretize(robotRelativeSpeeds, 0.02);
-    if(Math.abs(targetSpeeds.vxMetersPerSecond)>.25){
-      if(targetSpeeds.vxMetersPerSecond>.25){
-        targetSpeeds.vxMetersPerSecond=.25;
-      } else {
-        targetSpeeds.vxMetersPerSecond=-.25;
-      }
+    navx = new AHRS(edu.wpi.first.wpilibj.SPI.Port.kMXP);
+    
     }
-    if(Math.abs(targetSpeeds.vyMetersPerSecond)>.25){
-      if(targetSpeeds.vyMetersPerSecond>.25){
-        targetSpeeds.vyMetersPerSecond=.25;
-      } else {
-        targetSpeeds.vyMetersPerSecond=-.25;
-      }
+
+    public void setNewCenterState(double x, double y, double rotation) {
+        
+        this.x = x;
+        this.y = y;
+        this.rotation = rotation;
+
+        double oldX = x;
+        double oldY = y;
+
+        double angleFromNavX = navx.getAngle() / 180 * Math.PI;
+        angleFromNavX += Math.PI + Robot.gyroOffset;
+        x = oldX * Math.cos(angleFromNavX) - oldY * Math.sin(angleFromNavX);
+        y = oldX * Math.sin(angleFromNavX) + oldY * Math.cos(angleFromNavX);
+
+        if ((x < .1 && x > -.1) && (y < .1 && y > -.1) && (rotation < .1 && rotation > -.1)) {
+            x = 0;
+            y = 0;
+            rotation = 0;
+            for (int i = 0; i < 4; i++) {
+                swerveModuleSpeeds[i] = 0;
+            }
+        } else {
+            // V_p
+            double[] positionVector = {x, y};
+            // v_s
+            double[][] newRotationVector = new double[4][2];
+            double[][] constantRotationVector = new double[4][2];
+            
+            // we need to get the x and y components of the rotation vector
+            for (int i = 0; i < 4; i++) {
+                newRotationVector[i][0] = Math.cos(Constants.constantRotationAngle[i]);
+                newRotationVector[i][1] = Math.sin(Constants.constantRotationAngle[i]);
+            }
+            
+            // we then need to scale the rotation vector by the rotation value
+            for (int i = 0; i < 4; i++) {
+                newRotationVector[i][0] *= rotation;
+                newRotationVector[i][1] *= rotation;
+            }
+            
+            // now that we have the two scaled and set vector arrays, we can add them together
+            
+            // V_f
+            double[][] finalVector = new double[4][2];
+            for (int i = 0; i < 4; i++) {
+                finalVector[i][0] = positionVector[0] + newRotationVector[i][0];
+                finalVector[i][1] = positionVector[1] + newRotationVector[i][1];
+            }
+            
+            if (rotation < .1 && rotation > -.1) {
+                brakeRotation = false;
+            } else {
+                if (Math.sqrt(positionVector[0] * positionVector[0] + positionVector[1] * positionVector[1]) < .1) {
+                    brakeRotation = true;
+                } else {
+                    brakeRotation = false;
+                }
+            }
+
+            // calculate the hypotenuse
+            // double hypotenuse = Math.sqrt(finalVector[0][0] * finalVector[0][0] + finalVector[0][1] * finalVector[0][1]);
+            double[] hypotenuse = new double[4];
+
+            for (int i = 0; i<4; ++i) {
+                hypotenuse[i] = Math.sqrt(finalVector[i][0] * finalVector[i][0] + finalVector[i][1] * finalVector[i][1]);
+            }
+            // calculate the angle using the previously commented out for loop, use hypotenuse
+            for (int i = 0; i < 4; i++) {
+                if (finalVector[i][1] > 0) {
+                    swerveModuleAngles[i] = Math.acos(finalVector[i][0] / hypotenuse[i]);
+                } else if (finalVector[i][1] < 0) {
+                    swerveModuleAngles[i] = Math.PI * 2 - Math.acos(finalVector[i][0] / hypotenuse[i]);
+                } 
+            }
+
+            SmartDashboard.putNumber("Front Left Angle", swerveModuleAngles[0]);
+            SmartDashboard.putNumber("Front Right Angle", swerveModuleAngles[1]);
+            SmartDashboard.putNumber("Back Left Angle", swerveModuleAngles[2]);
+            SmartDashboard.putNumber("Back Right Angle", swerveModuleAngles[3]);
+
+            // dont forget to add the offset
+            for (int i = 0; i < 4; i++) {
+                swerveModuleAngles[i] += swerveAngleOffset[i]  + (Math.PI /2);
+            }
+
+            // now that al the angles are set, we can set the speeds
+            for (int i = 0; i < 4; i++) {
+                swerveModuleSpeeds[i] = Math.sqrt(finalVector[i][0] * finalVector[i][0] + finalVector[i][1] * finalVector[i][1]);
+            }}
     }
-    setChassisSpeeds(targetSpeeds);
-  } 
+    public void setStates(boolean precisionMode) {
+        setDesiredAngle(frontLeftTurnEncoder, swerveModuleAngles[0]);
+        setDesiredAngle(frontRightTurnEncoder, swerveModuleAngles[1]);
+        setDesiredAngle(rearLeftTurnEncoder, swerveModuleAngles[2]);
+        setDesiredAngle(rearRightTurnEncoder, swerveModuleAngles[3]);
+    
+        runToState(frontLeftTurn, frontLeftTurnEncoder);
+        runToState(frontRightTurn, frontRightTurnEncoder);
+        runToState(rearLeftTurn, rearLeftTurnEncoder);
+        runToState(rearRightTurn, rearRightTurnEncoder);
+    
+        double sum = 0;
+        double avg = 0;
+        
+        // now we can set the speeds
+        
+        // average the speeds to each of the motors
+        for(int i = 0; i < swerveModuleSpeeds.length; i++){  
+            //getting elements from the list and adding to the variable sum   
+            sum = sum + swerveModuleSpeeds[i];  
+            //finds the average of the list  
+            avg = sum / swerveModuleSpeeds.length;   
 
-  /**
-   * Resets the Odometry
-   */
-  public void resetPose(Pose2d pose){
-    odometry.resetPosition(navx.getRotation2d(), getSwervePositions(), pose);
-  }
+        }
+        /* 
+        if (brakeRotation) {
+            frontLeftDrive.setIdleMode(CANSparkFlex.IdleMode.kBrake);
+            frontRightDrive.setIdleMode(CANSparkFlex.IdleMode.kBrake);
+            backLeftDrive.setIdleMode(CANSparkFlex.IdleMode.kBrake);
+            backRightDrive.setIdleMode(CANSparkFlex.IdleMode.kBrake);
+        } else {
+            frontLeftDrive.setIdleMode(CANSparkFlex.IdleMode.kCoast);
+            frontRightDrive.setIdleMode(CANSparkFlex.IdleMode.kCoast);
+            backLeftDrive.setIdleMode(CANSparkFlex.IdleMode.kCoast);
+            backRightDrive.setIdleMode(CANSparkFlex.IdleMode.kCoast);
+        }
 
-  /**
-   * Resets the the drive and turn motor for each module to zero. 
-   */
-  public void resetEncoders(){
-    frontLeft.resetEncoders();
-    frontRight.resetEncoders();
-    rearLeft.resetEncoders();
-    rearRight.resetEncoders();
-  }
 
-  /**
-   * Resets the heading.
-   */
-  public void resetHeading(){
-    navx.reset();
-  }
+        //Apply power deadband to keep motors from coasting
+        if(Math.abs(avg) < .1){
+            frontLeftDrive.stopMotor();
+            frontRightDrive.stopMotor();
+            backLeftDrive.stopMotor();
+            backRightDrive.stopMotor();
+        }else{
+            if(precisionMode){
+                frontLeftDrive.set (swerveModuleSpeeds[0] * .2);
+                frontRightDrive.set(swerveModuleSpeeds[1] * .2);
+                backLeftDrive.set  (swerveModuleSpeeds[2] * .2);
+                backRightDrive.set (swerveModuleSpeeds[3] * .2);
 
-  /**
-   * Stops all modules. 
-   */
-  public void stopModules(){
-    frontLeft.stop();
-    frontRight.stop();
-    rearLeft.stop();
-    rearRight.stop();
-  }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-    odometry.update(getRotation2d(),getSwervePositions());
-    field.setRobotPose(getPose());
-    poseEstimator.update(getRotation2d(), getSwervePositions());
-    SmartDashboard.putBoolean("FOC", FOC);
-    // SmartDashboard.putNumber("AVR Distance ",getDistance());
-    // SmartDashboard.putNumber("Avr Velocity", getVelocity());
-     SmartDashboard.putNumber("Navx Angle", getAngle());
-     SmartDashboard.putString("Rotation2d", getRotation2d().toString());
-     SmartDashboard.putNumber("Heading", getHeading());
-     SmartDashboard.putNumberArray("Absolute Positions", getPositions());
-     SmartDashboard.putNumber("Front Left", frontLeft.getTurnDegrees());
-     SmartDashboard.putNumber("Front Right", frontRight.getTurnDegrees());
-     SmartDashboard.putNumber("Rear Left", rearLeft.getTurnDegrees());
-     SmartDashboard.putNumber("Rear Right", rearRight.getTurnDegrees());
-    //SmartDashboard.putNumberArray("Absolute Encoder Positions", getAbsolutePositions());
-    // Each state tells me the angle and speed of each module. (for testing/verification)
-    SmartDashboard.putString("FrontLeft State", getSwerveStates()[0].toString());
-    SmartDashboard.putString("FrontRight State", getSwerveStates()[1].toString());
-    SmartDashboard.putString("RearLeft State", getSwerveStates()[2].toString());
-    SmartDashboard.putString("RearRight State", getSwerveStates()[3].toString());
-    SmartDashboard.putNumberArray("Positions", getPositions());
-  }
+            }else{
+                frontLeftDrive.set (swerveModuleSpeeds[0] * .7);
+                frontRightDrive.set(swerveModuleSpeeds[1] * .7);
+                backLeftDrive.set  (swerveModuleSpeeds[2] * .7);
+                backRightDrive.set (swerveModuleSpeeds[3] * .7);
+
+                frontLeftDrive.setIdleMode(CANSparkFlex.IdleMode.kCoast);
+                frontRightDrive.setIdleMode(CANSparkFlex.IdleMode.kCoast);
+                backLeftDrive.setIdleMode(CANSparkFlex.IdleMode.kCoast);
+                backRightDrive.setIdleMode(CANSparkFlex.IdleMode.kCoast);
+
+            }
+
+        }
+        */
+
+        if (precisionMode) {
+            power(.2, swerveModuleSpeeds);
+        } else {
+            power(.7, swerveModuleSpeeds);
+        }
+
+    }
+
+    public void power(double multiplier, double[] speeds) {
+        frontLeftDrive.set(multiplier * speeds[0]);
+        frontRightDrive.set(multiplier * speeds[1]);
+        rearLeftDrive.set(multiplier * speeds[2]);
+        rearRightDrive.set(multiplier * speeds[3]);
+    }
+
+    public void setDesiredAngle(CANcoder turnEncoder, double radianMeasure) {
+    
+        errorInState = previousState - turnEncoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI;
+        //absolute the error
+        errorInState = Math.abs(errorInState);
+    
+        previousState = turnEncoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI;
+        setState = radianMeasure;
+        while (setState >= Math.PI * 2)
+        {
+            setState -= Math.PI * 2;
+        }
+        while (setState < 0)
+        {
+            setState += Math.PI * 2;
+        }
+    
+    }
+
+    public void runToState(TalonFX turnMotor, CANcoder turnEncoder) {
+        //logic is to set the new position as a "0" and then run the motor to that position
+        //right now only p
+        double power = 0;
+        
+        double whereItIs = turnEncoder.getAbsolutePosition().getValueAsDouble() * 2 * Math.PI;
+    
+        double[] otherValidStates = {
+            setState + (Math.PI *2),
+            setState - (Math.PI *2)
+        };
+        
+        // the encoder (whereItIs) resets to 0 every 2pi, but we can tell the power to go
+        // beyond 2pi, and it wont matter until it resets to 0
+        // so, we just need to set it for the closest congruent angle
+    
+        double[] differences = {
+            whereItIs - setState,
+            whereItIs - otherValidStates[0],
+            whereItIs - otherValidStates[1]
+        };
+    
+        int smallestDifference = 0;
+    
+        // find the smallest difference
+        if (Math.abs(differences[0]) < Math.abs(differences[1]) && Math.abs(differences[0]) < Math.abs(differences[2])) {
+            smallestDifference = 0;
+        } else if (Math.abs(differences[1]) < Math.abs(differences[2]) && Math.abs(differences[1]) < Math.abs(differences[0])) {
+            smallestDifference = 1;
+        } else if (Math.abs(differences[2]) < Math.abs(differences[0]) && Math.abs(differences[2]) < Math.abs(differences[1])) {
+            smallestDifference = 2;
+        }
+    
+        // note that the negative power goes forward
+        double powerProportion = pidStuff[0] * differences[smallestDifference];
+    
+        power = powerProportion;
+        
+        turnMotor.set(power);
+    }
+
+    public void stopModules(){
+        frontLeftDrive.stopMotor();
+        frontRightDrive.stopMotor();
+        rearLeftDrive.stopMotor();
+        rearRightDrive.stopMotor();
+
+        frontLeftTurn.stopMotor();
+        frontRightTurn.stopMotor();
+        rearLeftTurn.stopMotor();
+        rearRightTurn.stopMotor();
+    }
 
 }

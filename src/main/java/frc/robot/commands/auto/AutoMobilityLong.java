@@ -13,29 +13,36 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Vars;
 import frc.robot.KnightsSwerve.DriveManipulation;
+import frc.robot.commands.drive.SwerveDriveAuto;
 import frc.robot.commands.drive.TankDrive;
 import frc.robot.commands.feed.FeedNote;
+import frc.robot.commands.feed.RunFeed;
 import frc.robot.commands.intake.RunIntake;
 import frc.robot.commands.shooter.ShooterFeed;
 import frc.robot.commands.shooter.ShooterPrep;
+import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.FeedSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.TankSubsystem;
 
-public class ManualAuto extends SequentialCommandGroup {
+public class AutoMobilityLong extends SequentialCommandGroup {
   /** Creates a new ManualAuto. */
-  public ManualAuto(DriveManipulation drive, IntakeSubsystem intake, FeedSubsystem feed, ShooterSubsystem shooter) {
+  public AutoMobilityLong(DriveManipulation drive, IntakeSubsystem intake, FeedSubsystem feed, ShooterSubsystem shooter) {
     // Use addRequirements() here to declare subsystem dependencies.
 
     addCommands(
-      new ParallelDeadlineGroup(new WaitCommand(2), new ShooterFeed(shooter, feed))
-      // new ParallelDeadlineGroup(new WaitCommand(3), new ParallelCommandGroup(
-      //   new TankDrive(tank, ()->-.5, ()->-.5)),
-      //   new ParallelCommandGroup(new RunIntake(intake, ()->Vars.INTAKE_FORWARD), new FeedNote(feed, Vars.FEED_FORWARD))
-      // ),
-      // new ParallelDeadlineGroup(new WaitCommand(3), new TankDrive(tank, ()->.5, ()->.5)),
-      // new ParallelDeadlineGroup(new WaitCommand(2), new ShooterFeed(shooter, feed))
+      new ParallelDeadlineGroup(new WaitCommand(2), new ShooterFeed(shooter, feed)),
+      new ParallelDeadlineGroup(new WaitCommand(4.75), new ParallelCommandGroup(
+        new SwerveDriveAuto(drive, .2, 0, 0)
+        )
+      ),
+      new ParallelDeadlineGroup(new WaitCommand(2), new ParallelCommandGroup(
+        new SwerveDriveAuto(drive, 0, -.2, 0),
+        new ParallelCommandGroup(new RunIntake(intake, ()->.75), new FeedNote(feed, .75))
+        )
+      )
     );
+
   }
 }

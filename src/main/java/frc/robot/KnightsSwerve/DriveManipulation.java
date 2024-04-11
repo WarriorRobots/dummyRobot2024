@@ -56,14 +56,17 @@ public class DriveManipulation {
     private TalonFX backLeftDrive   = new TalonFX(RobotMap.ID_REARLEFT_DRIVE);
     private TalonFX backRightDrive  = new TalonFX(RobotMap.ID_REARRIGHT_DRIVE);
 
-    public DriveManipulation(XboxController getController) {
-        controller = getController;
+    public DriveManipulation(/*XboxController getController*/) {
+        // controller = getController;
 
     }
-    public void setNewCenterState() {
-        x        =  controller.getLeftX();
-        y        = -controller.getLeftY();
-        rotation =  -controller.getRightX();
+    public void setNewCenterState(double x, double y, double rotation) {
+        this.x = x;
+        this.y = y;
+        this.rotation = rotation;
+        // x        =  controller.getLeftX();
+        // y        = -controller.getLeftY();
+        // rotation =  -controller.getRightX();
 
         double oldX = x;
         double oldY = y;
@@ -73,7 +76,7 @@ public class DriveManipulation {
         x = oldX * Math.cos(angleFromNavX) - oldY * Math.sin(angleFromNavX);
         y = oldX * Math.sin(angleFromNavX) + oldY * Math.cos(angleFromNavX);
 
-        if ((x < .1 && x > -.1) && (y < .1 && y > -.1) && (rotation < .1 && rotation > -.1)) {
+        if ((x < .08 && x > -.08) && (y < .08 && y > -.08) && (rotation < .08 && rotation > -.08)) {
             x = 0;
             y = 0;
             rotation = 0;
@@ -108,7 +111,7 @@ public class DriveManipulation {
                 finalVector[i][1] = positionVector[1] + newRotationVector[i][1];
             }
             
-            if (rotation < .1 && rotation > -.1) {
+            if (rotation < .08 && rotation > -.08) {
                 brakeRotation = false;
             } else {
                 if (Math.sqrt(positionVector[0] * positionVector[0] + positionVector[1] * positionVector[1]) < .1) {
@@ -119,13 +122,18 @@ public class DriveManipulation {
             }
 
             // calculate the hypotenuse
-            double hypotenuse = Math.sqrt(finalVector[0][0] * finalVector[0][0] + finalVector[0][1] * finalVector[0][1]);
+            // double hypotenuse = Math.sqrt(finalVector[0][0] * finalVector[0][0] + finalVector[0][1] * finalVector[0][1]);
+            double[] hypotenuse = new double[4];
+
+            for (int i = 0; i<4; ++i) {
+                hypotenuse[i] = Math.sqrt(finalVector[i][0] * finalVector[i][0] + finalVector[i][1] * finalVector[i][1]);
+            }
             // calculate the angle using the previously commented out for loop, use hypotenuse
             for (int i = 0; i < 4; i++) {
                 if (finalVector[i][1] > 0) {
-                    swerveModuleAngles[i] = Math.acos(finalVector[i][0] / hypotenuse);
+                    swerveModuleAngles[i] = Math.acos(finalVector[i][0] / hypotenuse[i]);
                 } else if (finalVector[i][1] < 0) {
-                    swerveModuleAngles[i] = Math.PI * 2 - Math.acos(finalVector[i][0] / hypotenuse);
+                    swerveModuleAngles[i] = Math.PI * 2 - Math.acos(finalVector[i][0] / hypotenuse[i]);
                 } 
             }
 
@@ -227,4 +235,17 @@ public class DriveManipulation {
         backLeftDrive.set(multiplier * speeds[2]);
         backRightDrive.set(multiplier * speeds[3]);
     }
+
+    public void stopModules(){
+        frontLeftDrive.stopMotor();
+        frontRightDrive.stopMotor();
+        backLeftDrive.stopMotor();
+        backRightDrive.stopMotor();
+
+        frontLeft.stopModule();
+        frontRight.stopModule();
+        backLeft.stopModule();
+        backRight.stopModule();
+    } 
+    
 }

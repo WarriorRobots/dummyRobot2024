@@ -22,6 +22,10 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.DashboardContainer.TabsIndex;
+import frc.robot.KnightsSwerve.DriveManipulation;
+import frc.robot.commands.auto.AutoFullMobility;
+import frc.robot.commands.auto.AutoMobility;
+import frc.robot.commands.auto.AutoMobilityLong;
 import frc.robot.commands.auto.ManualAuto;
 import frc.robot.commands.feed.FeedNote;
 import frc.robot.commands.intake.RunIntake;
@@ -68,7 +72,10 @@ public class AutoContainer {
   //chooser = AutoBuilder.buildAutoChooser();
 
   chooser.addOption("None", new InstantCommand());
-  chooser.addOption("Last Resort", new ManualAuto(RobotContainer.m_tank, RobotContainer.m_intake, RobotContainer.m_feed, RobotContainer.m_shooter));
+  chooser.addOption("Single Shot", new ManualAuto(new DriveManipulation(), RobotContainer.m_intake, RobotContainer.m_feed, RobotContainer.m_shooter));
+  chooser.addOption("3/2 Note Auto", new AutoMobility(new DriveManipulation(), RobotContainer.m_intake, RobotContainer.m_feed, RobotContainer.m_shooter));
+  chooser.addOption("Bugger Off", new AutoMobilityLong(new DriveManipulation(), RobotContainer.m_intake, RobotContainer.m_feed, RobotContainer.m_shooter));
+  chooser.addOption("Two Note", new AutoFullMobility(new DriveManipulation(), RobotContainer.m_intake, RobotContainer.m_feed, RobotContainer.m_shooter));
 
   // chooser.addOption("Test", AutoBuilder.buildAuto("New Auto"));
   // chooser.addOption("Test", new PathPlannerAuto("New Auto")); 

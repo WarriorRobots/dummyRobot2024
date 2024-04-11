@@ -24,4 +24,16 @@ public final class Constants {
   public static final double CLICKS_PER_REV_QUADRATURE = 4096.0; 
   public static final double CLICKS_PER_REV_INTEGRATED = 2048.0; 
 
+  /**
+  * If the robot rotates, there are different angles that the robot uses to rotate.
+  * In the case that the robot is to rotate, we need to use the vector that aligns itself with the robot's rotation
+  * These are the default radian measure of the robot
+  * @category Constant Expression */
+  public static final double[] constantRotationAngle = {
+    Math.PI / 4,
+    -Math.PI / 4,
+    Math.PI * 3 / 4,
+    -Math.PI * 3 / 4,
+  };
+
 }

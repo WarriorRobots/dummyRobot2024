@@ -78,4 +78,9 @@ public class TurnMotor {
         
         basicTurnMotor.set(power);
     }
+
+    public void stopModule(){
+        basicTurnMotor.stopMotor();
+    } 
+    
 }

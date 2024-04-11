@@ -11,7 +11,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotMap;
-import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.TankSubsystem;
 
 public class TankDrive extends Command {

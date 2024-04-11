@@ -76,12 +76,13 @@ public class Vars {
     // Rear Right
     new Translation2d(Units.inchesToMeters(-10.25), Units.inchesToMeters(-10.25)) 
     };
-  //public static final double[] absoluteEncoderOffsets = {-37, -166, -48, 21};
-  //public static final double[] absoluteEncoderOffsets = {-10.8, 3.3, -8.3, 6.2};
-  // public static final double[] absoluteEncoderOffsets = {39, -144, 102, 108};
-  public static final double[] absoluteEncoderOffsets = {-160, -12, -1, -277};
-  //public static final Rotation2d angleOffset = Rotation2d.fromDegrees(327.48046875);
-  //public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);
+  // offset for where motors are in radians
+  public static double[] swerveAngleOffset = {
+    -185 * (Math.PI /180),
+    115 * (Math.PI /180),
+    5 * (Math.PI /180),
+    200 * (Math.PI /180),
+  };
   // Swerve Drive Kinematics
   public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(swerve);
   // Auto Constraints
@@ -101,8 +102,8 @@ public class Vars {
   public static final double ARM_MAX_ANGLE = 100; // degrees
   public static final double ARM_MIN_ANGLE = 0; // degrees
   public static final double ARM_TOLERANCE = 6; // Degrees
-  public static final double ARM_FORWARD = .5; // percent
-  public static final double ARM_BACKWARD = -.5; //percent
+  public static final double ARM_FORWARD = .75; // percent
+  public static final double ARM_BACKWARD = -.75; //percent
   // Feed
   public static final boolean FEED_REVERSED = true;
   public static final double FEED_FORWARD = 1;

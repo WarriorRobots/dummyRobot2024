@@ -16,8 +16,8 @@ public class IO {
   
   // private static final Joystick m_leftJoystick = new Joystick(1);
   // private static final Joystick m_rightJoystick = new Joystick(0);
-  private static final XboxController m_xbox1 = new XboxController(0);
-  private static final XboxController m_xbox2 = new XboxController(1);
+  public static final XboxController m_xbox1 = new XboxController(0);
+  public static final XboxController m_xbox2 = new XboxController(1);
 
   // protected static final JoystickButton leftJoystick_1 = new JoystickButton(m_leftJoystick, 1);
   // protected static final JoystickButton leftJoystick_2 = new JoystickButton(m_leftJoystick, 2);
