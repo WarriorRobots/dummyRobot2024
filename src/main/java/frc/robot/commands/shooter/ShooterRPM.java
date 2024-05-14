@@ -45,8 +45,8 @@ public class ShooterRPM extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    //return false;
-    return counter >= 100;
+    return false;
+    //return counter >= 100;
     // return m_shooter.getRPM() >= 3500;
   }
 }

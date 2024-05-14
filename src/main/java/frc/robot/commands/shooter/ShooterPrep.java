@@ -51,6 +51,6 @@ public class ShooterPrep extends Command {
   public boolean isFinished() {
     // make sure a note is not in the shooter
     //return !m_feed.containsNote();
-    return counter >= 0;
+    return counter >= 50;
   }
 }

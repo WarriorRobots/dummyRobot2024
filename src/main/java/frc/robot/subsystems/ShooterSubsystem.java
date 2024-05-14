@@ -74,7 +74,7 @@ public class ShooterSubsystem extends SubsystemBase {
     shooter_top.getConfigurator().apply(currentLimitConfigs);
     
     shooter_bottom = new TalonFX(RobotMap.ID_SHOOTER_BOTTOM);
-    shooter_bottom.setControl(new Follower(shooter_top.getDeviceID(), true));
+    shooter_bottom.setControl(new Follower(shooter_top.getDeviceID(), false));
 
     shooter_bottom.getConfigurator().apply(shooterFeedback);
     shooter_bottom.getConfigurator().apply(slot0Configs);    

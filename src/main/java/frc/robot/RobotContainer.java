@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -87,7 +88,7 @@ public class RobotContainer {
   private final ShooterPrep m_shooterPrep = new ShooterPrep(m_feed);
   private final ShooterFeed m_shooterFeed = new ShooterFeed(m_shooter, m_feed);
   private final SequentialCommandGroup m_shooterSequence = new SequentialCommandGroup(
-    m_shooterPrep,
+    new ParallelDeadlineGroup(m_shooterPrep, m_shooterRPM),
     m_shooterFeed
   );
   //private final ShooterFeed m_shooterSequence = new ShooterFeed(m_shooter, m_feed);

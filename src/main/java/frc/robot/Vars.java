@@ -116,7 +116,7 @@ public class Vars {
   public static final double INTAKE_BACKWARD = -0.5;
 
   // Shooter
-  public static final boolean SHOOTER_TOP_REVERSED = false;
+  public static final boolean SHOOTER_TOP_REVERSED = true;
   public static final boolean SHOOTER_BOTTOM_REVERSED = true;
   public static final double SHOOTER_KP = .15; 
   public static final double SHOOTER_DEFAULT = 6500.0;
